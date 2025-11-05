@@ -45,7 +45,8 @@
   .brand{display:flex;align-items:center;gap:12px;min-width:0}
   .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent-start),var(--accent-end));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:20px;flex-shrink:0}
   .brand-text{min-width:0}
-  .title-strong{font-weight:900;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* smaller title so it fits mobile (your request) */
+  .title-strong{font-weight:900;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .by{font-size:12px;color:var(--muted);margin-top:2px}
 
   .header-actions{display:flex;gap:10px;align-items:center}
@@ -55,7 +56,7 @@
   .hamb{width:46px;height:46px;border-radius:10px;background:var(--glass);display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid var(--input-border)}
 
   /* hero + tabs */
-  .hero{margin-top:18px;padding:20px;border-radius:16px;background:linear-gradient(180deg,var(--card), rgba(255,255,255,0.96));box-shadow:var(--shadow-lg)}
+  .hero{margin-top:18px;padding:20px;border-radius:16px;background:linear-gradient(180deg,var(--card), rgba(255,255,255,0.96));box-shadow:var(--shadow-lg); color:var(--text)}
   .hero .big{font-size:28px;font-weight:900;margin:0}
   .hero .small{color:var(--muted);margin-top:8px}
   .tabs{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
@@ -110,7 +111,26 @@
   @media(max-width:520px){
     .logo{width:48px;height:48px;font-size:18px}
     .hero .big{font-size:20px}
+    .title-strong{font-size:15px}
   }
+
+  /* ---------------------------
+     Dark-mode hero adjustments
+     (only change to make hero black + white text)
+     --------------------------- */
+  html.dark .hero {
+    background: linear-gradient(180deg,#000000, #0d0d0d) !important;
+    color: #ffffff !important;
+    box-shadow: var(--shadow-lg);
+  }
+  html.dark .hero .small { color: #bfcde0 !important; }
+  html.dark .hero .tab { border-color: rgba(255,255,255,0.04); color: #d7e9ff; }
+  html.dark .hero .tab.active { box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+
+  /* keep header brand readable in dark */
+  html.dark .title-strong { color: #e9f1ff; }
+  html.dark .by { color: var(--muted); }
+
 </style>
 </head>
 <body>
