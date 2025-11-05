@@ -3,73 +3,95 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>PirateRuler — Invoice & ID Card Maker</title>
-<meta name="description" content="Create invoices and ID cards locally in your browser. No APIs, private & fast." />
+<title>Invoice & ID Maker — PirateRuler</title>
+<meta name="description" content="Invoice & ID maker — client-side, private. Create invoices, design ID cards, export PNG/PDF — no uploads." />
 <meta name="theme-color" content="#f7fbff" />
 <link rel="icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect rx="14" width="64" height="64" fill="%236b7dff"/><text x="50%" y="50%" font-family="Inter,Arial,sans-serif" font-weight="800" font-size="26" text-anchor="middle" alignment-baseline="central" fill="white">PR</text></svg>'>
 <style>
+  /* --- theme tokens (kept as you had) --- */
   :root{
     --bg:#f3f7fb; --card:#ffffff; --muted:#6b7480; --text:#0b2130;
     --accent-start:#6b7dff; --accent-end:#0bb3ff;
     --glass: rgba(11,17,28,0.04);
-    --radius:14px; --shadow-lg: 0 20px 50px rgba(3,12,30,0.14); --shadow-sm: 0 8px 24px rgba(3,12,30,0.07);
-    --content-max:1200px;
+    --radius:14px; --shadow-lg: 0 18px 50px rgba(3,12,30,0.18);
+    --shadow-sm: 0 8px 24px rgba(3,12,30,0.08);
   }
-  html.theme-dark { --bg:#071225; --card:#061028; --muted:#98a7bf; --text:#e9f1ff; --accent-start:#5ab3ff; --accent-end:#6b7dff; }
-  html.theme-ocean { --bg:#e8f7fb; --card:#ffffff; --muted:#4f6b75; --text:#063242; --accent-start:#00c2d1; --accent-end:#2b9fff; }
-  html.theme-sunset{ --bg:#fff6f8; --card:#fff; --muted:#7a6b77; --text:#2a1020; --accent-start:#ff7aa2; --accent-end:#ffb86b; }
+  html.dark { --bg:#071225; --card:#061028; --muted:#98a7bf; --text:#e9f1ff; --accent-start:#5ab3ff; --accent-end:#6b7dff; }
+  html.ocean { --bg:#e8f7fb; --card:#ffffff; --muted:#4f6b75; --text:#063242; --accent-start:#00c2d1; --accent-end:#2b9fff; }
+  html.sunset{ --bg:#fff6f8; --card:#fff; --muted:#7a6b77; --text:#2a1020; --accent-start:#ff7aa2; --accent-end:#ffb86b; }
+
   *{box-sizing:border-box}
-  body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;background:linear-gradient(180deg,var(--bg), #e9f6ff);color:var(--text);-webkit-font-smoothing:antialiased}
-  a{color:inherit;text-decoration:none}
-  .wrap{max-width:var(--content-max);margin:14px auto;padding:18px}
+  body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;color:var(--text);background:linear-gradient(180deg,var(--bg),#e9f6ff);-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  .wrap{max-width:1100px;margin:14px auto;padding:18px}
 
   /* header */
-  header.header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border-radius:14px;background:linear-gradient(90deg, rgba(107,125,255,0.06), rgba(11,179,255,0.02));box-shadow:var(--shadow-sm)}
+  .header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border-radius:14px;background:linear-gradient(90deg, rgba(107,125,255,0.06), rgba(11,179,255,0.02));box-shadow:var(--shadow-sm)}
   .brand{display:flex;align-items:center;gap:12px;min-width:0}
-  .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent-start),var(--accent-end));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:20px;flex-shrink:0}
+  .logo{width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,var(--accent-start),var(--accent-end));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:18px;flex-shrink:0;box-shadow:0 10px 26px rgba(11,107,255,0.10)}
   .brand-text{min-width:0}
   .title-strong{font-weight:900;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .by{font-size:12px;color:var(--muted)}
 
+  /* buttons (calculator-like theme button) */
   .controls{display:flex;gap:10px;align-items:center}
   .btn{padding:9px 12px;border-radius:999px;border:none;cursor:pointer;font-weight:800;background:transparent}
   .btn.ghost{background:transparent;border:1px solid rgba(0,0,0,0.06);color:var(--text)}
-  .btn.theme{background:linear-gradient(90deg,var(--accent-start),var(--accent-end));color:white;box-shadow:0 8px 30px rgba(75,120,255,0.16);border-radius:999px;padding:10px 14px}
+  .btn.theme{
+    background:linear-gradient(90deg,var(--accent-start),var(--accent-end));
+    color:white; box-shadow:0 10px 30px rgba(75,120,255,0.14);
+    padding:10px 16px;border-radius:999px;font-weight:900;
+  }
 
-  /* layout */
-  main{display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start;margin-top:18px;min-height:calc(100vh - 260px)}
-  @media(max-width:980px){ main{grid-template-columns:1fr} aside.right{position:relative;width:auto} }
+  /* main grid */
+  main{display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start;margin-top:18px;min-height:calc(100vh - 200px)}
+  @media(max-width:980px){ main{grid-template-columns:1fr} .sidebar{width:94vw} }
 
+  /* cards */
   .card{background:var(--card);border-radius:14px;padding:18px;box-shadow:var(--shadow-sm);border:1px solid rgba(0,0,0,0.04)}
   h2{margin:0 0 8px 0;font-size:18px}
   .muted{color:var(--muted);font-size:13px}
-  input, textarea, select{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);background:transparent;color:var(--text);font-size:14px}
+
+  /* Invoice form styles */
+  .input{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(10,20,40,0.06);margin-top:12px}
   .row{display:flex;gap:10px}
-  .small{font-size:13px;color:var(--muted)}
-  .primary{background:linear-gradient(90deg,var(--accent-start),var(--accent-end));color:white;padding:10px 14px;border-radius:10px;border:none;font-weight:800;cursor:pointer}
+  .half{flex:1}
+  .btn.primary{background:linear-gradient(90deg,var(--accent-start),var(--accent-end));color:white;padding:10px 14px;border-radius:999px;border:none;font-weight:800;cursor:pointer}
+  .btn.small{padding:8px 12px;border-radius:999px}
+  .table{width:100%;border-collapse:collapse;margin-top:12px}
+  .table th,.table td{padding:10px;text-align:left;color:var(--muted);font-weight:700}
+  .table td{font-weight:600}
 
-  /* Invoice table */
-  table.inv{width:100%;border-collapse:collapse;margin-top:12px}
-  table.inv th, table.inv td{padding:8px;border-bottom:1px solid rgba(0,0,0,0.04);text-align:left}
-  table.inv th{font-weight:800;background:transparent;color:var(--muted);font-size:13px}
-  .table-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-  .totals{margin-top:12px;display:flex;flex-direction:column;gap:6px;align-items:flex-end;font-weight:800}
+  .totals{margin-top:18px;text-align:right;font-weight:900}
 
-  /* ID Card */
-  .id-canvas{border-radius:12px;overflow:hidden;background:linear-gradient(180deg,#fff,#f6fbff);display:block;max-width:320px;width:100%;height:auto;border:1px solid rgba(0,0,0,0.04)}
-  .id-controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  /* ID card area */
+  #idCanvas{width:100%;height:auto;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.98),rgba(255,255,255,0.96));border:1px solid rgba(0,0,0,0.04);}
 
-  /* right panel features */
+  /* sidebar (right) */
   aside.right{align-self:start}
   .panel{padding:14px;border-radius:12px;background:var(--card);box-shadow:var(--shadow-sm);border:1px solid rgba(0,0,0,0.04)}
-  .feature{display:flex;gap:12px;align-items:center;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.96));box-shadow:var(--shadow-lg);min-height:84px}
-  .f-icon{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--accent-start),var(--accent-end));flex-shrink:0}
+  .sidebar{position:fixed;top:0;right:0;height:100vh;width:360px;transform:translateX(120%);background:var(--card);box-shadow:-40px 0 80px rgba(2,8,20,0.25);padding:20px;border-left:1px solid rgba(0,0,0,0.04);border-radius:0 0 0 14px;z-index:90;overflow:auto}
+  .sidebar.open{transform:translateX(0);transition:transform .28s cubic-bezier(.2,.9,.3,1)}
+  .hamb{width:46px;height:46px;border-radius:10px;background:var(--glass);display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid rgba(0,0,0,0.04)}
 
-  footer{margin-top:18px;padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.96));text-align:center;box-shadow:var(--shadow-lg)}
-  .visit{padding:10px 18px;border-radius:999px;background:linear-gradient(90deg,#ff7aa2 0%, #6b7dff 100%);color:#fff;font-weight:800;text-decoration:none;display:inline-block}
+  /* file input appearance for mobile */
+  .fileRow{display:flex;gap:10px;align-items:center;margin-top:12px}
+  .fileLabel{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:999px;background:linear-gradient(90deg,var(--accent-start),var(--accent-end));color:#fff;font-weight:800;cursor:pointer}
+  input[type=file]{display:none}
 
-  /* responsive tweaks */
-  @media(max-width:480px){ .logo{width:44px;height:44px;font-size:16px;border-radius:10px} .title-strong{font-size:16px} }
+  /* small helpers */
+  .muted-small{color:var(--muted);font-size:13px;margin-top:8px}
+  .hint{color:var(--muted);font-size:13px;margin-bottom:10px}
+
+  /* futuristic touches */
+  .glow{box-shadow:0 12px 40px rgba(107,125,255,0.12), 0 2px 8px rgba(11,179,255,0.06)}
+
+  /* subtle responsive */
+  @media(max-width:680px){
+    .title-strong{font-size:16px}
+    .logo{width:46px;height:46px;font-size:16px}
+    main{grid-template-columns:1fr}
+  }
 </style>
 </head>
 <body>
@@ -77,508 +99,451 @@
     <header class="header">
       <div class="brand">
         <a href="/" aria-label="Home" style="display:flex;align-items:center;gap:12px">
-          <div class="logo" aria-hidden="true">PR</div>
+          <div class="logo" id="logo">PR</div>
           <div class="brand-text">
-            <div class="title-strong">Invoice & ID Maker</div>
+            <div class="title-strong" id="brandTitle">Invoice & ID Maker</div>
             <div class="by">by PirateRuler.com</div>
           </div>
         </a>
       </div>
 
-      <div class="controls" role="navigation" aria-label="Header controls">
-        <button id="themeBtn" class="btn theme">Ocean ▾</button>
-        <button id="openSidebarBtn" class="btn ghost" title="Open menu">☰</button>
+      <div class="controls">
+        <button id="themeBtn" class="btn theme glow" title="Theme">Ocean ▾</button>
+        <div class="hamb" id="openSidebarBtn" title="Menu">☰</div>
       </div>
     </header>
 
     <main>
       <!-- LEFT: Invoice + ID -->
-      <section class="card" aria-labelledby="mainTitle">
-        <h2 id="mainTitle">Invoice Builder</h2>
-        <div class="muted">Create invoices quickly — add items, set tax & discount, then print or export. Everything runs in your browser (no uploads).</div>
+      <div>
+        <!-- Invoice Builder -->
+        <section class="card" id="invoiceCard" aria-labelledby="invoiceTitle">
+          <h2 id="invoiceTitle">Invoice Builder</h2>
+          <div class="hint">Create invoices quickly — add items, set tax & discount, then print or export. Everything runs in your browser (no uploads).</div>
 
-        <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">
-          <input id="companyName" type="text" placeholder="Your company name" />
-          <input id="invoiceNumber" type="text" placeholder="Invoice # (auto)" />
-        </div>
+          <input id="invCustomer" class="input" placeholder="Customer name" value="" />
+          <input id="invNumber" class="input" placeholder="Invoice # / Reference" style="margin-top:12px" />
 
-        <div class="row" style="margin-top:8px">
-          <input id="billTo" type="text" placeholder="Bill to (client name / address)" />
-          <input id="invoiceDate" type="date" />
-        </div>
-
-        <!-- Items table -->
-        <table class="inv" id="itemsTable" aria-live="polite">
-          <thead>
-            <tr><th style="width:40%">Description</th><th style="width:12%">Qty</th><th style="width:16%">Unit</th><th style="width:12%">Tax %</th><th style="width:14%">Line Total</th><th style="width:6%"></th></tr>
-          </thead>
-          <tbody id="itemsBody"></tbody>
-        </table>
-
-        <div class="table-actions">
-          <button class="primary" id="addItem">Add Item</button>
-          <button class="btn ghost" id="clearItems">Clear Items</button>
-        </div>
-
-        <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">
-          <div style="flex:1;min-width:220px">
-            <label class="small">Discount (%)</label>
-            <input id="discount" type="number" value="0" />
+          <div style="display:flex;gap:10px;margin-top:12px">
+            <input id="invNote" class="input half" placeholder="Note / Description (optional)" />
+            <input id="invDate" type="date" class="input half" />
           </div>
-          <div style="flex:1;min-width:220px">
-            <label class="small">Global Tax (%)</label>
-            <input id="globalTax" type="number" value="0" />
-          </div>
-        </div>
 
-        <div class="totals" id="totals">
-          <div>Subtotal: <span id="subVal">0.00</span></div>
-          <div>Tax: <span id="taxVal">0.00</span></div>
-          <div>Discount: <span id="discVal">0.00</span></div>
-          <div style="font-size:18px">Total: <span id="totalVal">0.00</span></div>
-        </div>
+          <table class="table" id="itemsTable" aria-label="Invoice items">
+            <thead>
+              <tr><th>Description</th><th>Qty</th><th>Unit</th><th>Tax %</th><th>Line total</th></tr>
+            </thead>
+            <tbody id="itemsBody"></tbody>
+          </table>
 
-        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-          <button id="printInvoice" class="primary">Print Invoice</button>
-          <button id="exportJson" class="btn ghost">Export JSON</button>
-          <button id="saveLocal" class="btn ghost">Save Locally</button>
-          <button id="loadLocal" class="btn ghost">Load Last</button>
-          <button id="resetInvoice" class="btn ghost">Reset</button>
-        </div>
-
-        <hr style="margin-top:18px;border:none;border-top:1px solid rgba(0,0,0,0.04)" />
-
-        <h2 style="margin-top:14px">ID Card Designer</h2>
-        <div class="muted">Design a simple ID card and download as PNG. Upload a photo from your phone and position it.</div>
-
-        <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap">
-          <input id="idName" type="text" placeholder="Full name" />
-          <input id="idRole" type="text" placeholder="Role / Title" />
-        </div>
-        <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap">
-          <input id="idCompany" type="text" placeholder="Company / Org" />
-          <input id="idBgColor" type="color" value="#6b7dff" title="Background color" />
-        </div>
-
-        <div style="display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap">
-          <label class="small" style="margin-right:6px">Photo</label>
-          <input id="idPhotoInput" type="file" accept="image/*" />
-          <button id="idClearPhoto" class="btn ghost">Clear Photo</button>
-        </div>
-
-        <div style="margin-top:12px;display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
-          <canvas id="idCanvas" width="450" height="280" class="id-canvas" aria-label="ID card preview"></canvas>
-          <div style="flex:1;min-width:220px">
-            <div class="id-controls">
-              <button id="downloadId" class="primary">Download ID PNG</button>
-              <button id="saveIdLocal" class="btn ghost">Save ID</button>
-              <button id="loadIdLocal" class="btn ghost">Load ID</button>
-            </div>
-            <div style="margin-top:10px" class="small muted">Tip: upload a square headshot for best results. Once designed, click download to get a PNG of the card.</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- RIGHT: Help & features -->
-      <aside class="right">
-        <div class="panel">
-          <div style="display:flex;gap:12px;align-items:center">
-            <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent-start),var(--accent-end));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900">PR</div>
-            <div>
-              <div style="font-weight:900">PirateRuler Tools</div>
-              <div class="muted">Private, client-side utilities — no uploads. Save locally or print directly.</div>
-            </div>
+          <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+            <button id="addItem" class="btn primary">Add Item</button>
+            <button id="clearItems" class="btn ghost small">Clear Items</button>
           </div>
 
           <div style="margin-top:12px">
-            <div style="font-weight:900;margin-bottom:6px">Quick tips</div>
-            <ul class="muted" style="margin:0 0 0 16px;padding:0">
-              <li>Use Print → Save as PDF or physical printer for invoices.</li>
-              <li>Photos from iOS sometimes need Edit → Done to allow pixel reading — if errors occur re-save the photo.</li>
-              <li>Saved invoices & ID cards are stored only in your browser (localStorage).</li>
-            </ul>
+            <label class="muted">Discount (%)</label>
+            <input id="globalDiscount" class="input" placeholder="0" value="0" />
+            <label class="muted" style="margin-top:8px;display:block">Global Tax (%)</label>
+            <input id="globalTax" class="input" placeholder="0" value="0" />
           </div>
 
-          <div style="margin-top:12px" class="feature">
-            <div class="f-icon">⚡</div>
-            <div>
-              <div style="font-weight:900">Fast & Local</div>
-              <div class="muted">Everything runs in your browser for privacy and speed.</div>
+          <div class="totals" aria-live="polite" id="totals">
+            <div>Subtotal: <span id="subtotal">0.00</span></div>
+            <div>Tax: <span id="taxTotal">0.00</span></div>
+            <div>Discount: <span id="discountTotal">0.00</span></div>
+            <div style="font-size:20px;margin-top:6px">Total: <span id="grandTotal">0.00</span></div>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+            <button id="printInvoice" class="btn primary">Print Invoice</button>
+            <button id="exportInvoice" class="btn ghost">Export JSON</button>
+            <button id="saveInvoice" class="btn ghost">Save Locally</button>
+            <button id="loadInvoice" class="btn ghost">Load Last</button>
+            <button id="resetInvoice" class="btn ghost">Reset</button>
+          </div>
+        </section>
+
+        <!-- ID Card Designer -->
+        <section class="card" id="idCard" style="margin-top:18px">
+          <h2>ID Card Designer</h2>
+          <div class="hint">Design a simple ID card and download as PNG. Upload a photo from your phone and position it.</div>
+
+          <input id="idName" class="input" placeholder="Full name" />
+          <input id="idRole" class="input" placeholder="Role / Title" style="margin-top:12px" />
+          <input id="idCompany" class="input" placeholder="Company / Org" style="margin-top:12px" />
+
+          <div style="margin-top:12px">
+            <label class="muted">Background color</label>
+            <input id="idBgColor" type="color" value="#ffffff" style="width:72px;height:40px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);margin-top:8px" />
+          </div>
+
+          <div class="fileRow" style="margin-top:12px">
+            <label for="idPhotoInput" class="fileLabel">Choose Photo</label>
+            <input id="idPhotoInput" type="file" accept="image/*;capture=camera" />
+            <button id="idClearPhoto" class="btn ghost small">Clear Photo</button>
+          </div>
+          <div class="muted-small">Tip: use a square headshot for best results. If iOS photos show errors — open Edit → Done then re-upload.</div>
+
+          <div style="margin-top:12px" class="card">
+            <canvas id="idCanvas" width="800" height="500" aria-label="ID preview"></canvas>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+            <button id="downloadId" class="btn primary">Download ID PNG</button>
+            <button id="saveId" class="btn ghost">Save ID</button>
+            <button id="loadId" class="btn ghost">Load ID</button>
+          </div>
+        </section>
+      </div>
+
+      <!-- RIGHT: tools & tips -->
+      <aside class="right">
+        <div class="panel">
+          <h3>PirateRuler Tools</h3>
+          <p class="muted">Private, client-side utilities — no uploads. Save locally or print directly.</p>
+
+          <div style="margin-top:12px">
+            <div class="card" style="padding:12px;margin-bottom:10px">
+              <strong>Fast & Local</strong>
+              <div class="muted-small">Everything runs in your browser for privacy and speed.</div>
+            </div>
+            <div class="card" style="padding:12px">
+              <strong>Mobile-friendly</strong>
+              <div class="muted-small">Upload screenshots and photos from your phone camera roll.</div>
             </div>
           </div>
 
-          <div style="margin-top:8px" class="feature">
-            <div class="f-icon" style="background:linear-gradient(135deg,#7bd6ff,#6b7dff)">📱</div>
-            <div>
-              <div style="font-weight:900">Mobile-friendly</div>
-              <div class="muted">Upload screenshots and photos from your phone camera roll.</div>
-            </div>
+          <div style="margin-top:12px;text-align:center">
+            <a class="btn primary" href="https://pirateruler.com" target="_blank" rel="noopener">Visit PirateRuler.com</a>
           </div>
         </div>
       </aside>
     </main>
 
-    <footer>
-      <a class="visit" href="https://pirateruler.com" target="_blank" rel="noopener noreferrer">Visit PirateRuler.com</a>
-      <div style="height:12px"></div>
-      <small class="muted">© <span id="year"></span> PirateRuler — Invoice & ID Maker (client-side)</small>
-    </footer>
-
-    <aside id="sidebar" style="position:fixed;top:0;right:0;height:100vh;width:360px;transform:translateX(120%);background:var(--card);box-shadow:-40px 0 80px rgba(2,8,20,0.25);padding:20px;border-left:1px solid rgba(0,0,0,0.04);border-radius:0 0 0 14px;overflow:auto;z-index:90;">
+    <!-- Sidebar content -->
+    <aside id="sidebar" class="sidebar" aria-hidden="true">
       <div style="display:flex;justify-content:flex-end"><button id="closeSidebar" class="btn ghost">Close</button></div>
       <h3>PirateRuler Links</h3>
-      <p class="muted">Quick links & help</p>
+      <p class="muted">Quick links & backup resources</p>
       <nav style="display:flex;flex-direction:column;gap:12px;margin-top:10px">
         <a href="https://www.pirateruler.com/post/about.html" target="_blank" rel="noopener noreferrer">About — PirateRuler</a>
-        <a href="https://www.pirateruler.com/post/privacy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+        <a href="https://www.pirateruler.com/post/privacy.html" target="_blank" rel="noopener noreferrer">Privacy</a>
         <a href="https://www.pirateruler.com/post/contact.html" target="_blank" rel="noopener noreferrer">Contact</a>
+        <a href="https://www.pirateruler.com/post/terms.html" target="_blank" rel="noopener noreferrer">Terms</a>
       </nav>
-      <div style="margin-top:18px;color:var(--muted);font-size:13px">If this site is offline you can visit PirateRuler for backups & resources:<br><a href="https://pirateruler.com" target="_blank" rel="noopener noreferrer">pirateruler.com</a></div>
+      <div style="margin-top:18px;color:var(--muted);font-size:13px">If this site is offline you can visit PirateRuler for backups:<br><a href="https://pirateruler.com" target="_blank">pirateruler.com</a></div>
     </aside>
+
+    <footer style="margin-top:18px;text-align:center">
+      <small class="muted">© <span id="year"></span> PirateRuler — Invoice & ID Maker (client-side)</small>
+    </footer>
   </div>
 
 <script>
   // small helpers
   const el = id => document.getElementById(id);
-  el('year').textContent = new Date().getFullYear();
+  document.getElementById('year').textContent = new Date().getFullYear();
 
-  // THEME
+  /* ---------------- Theme selector (preserve ocean default) ---------------- */
   const root = document.documentElement;
   const themeBtn = el('themeBtn');
-  const themes = ['theme-ocean','theme-sunset','theme-dark'];
-  let themeIndex = 0;
-  function applyTheme(i){
-    themes.forEach(t => root.classList.remove(t));
-    const cls = themes[i % themes.length];
-    root.classList.add(cls);
-    themeBtn.textContent = (cls === 'theme-ocean' ? 'Ocean' : cls === 'theme-sunset' ? 'Sunset' : 'Dark') + ' ▾';
-    localStorage.setItem('pr-theme', cls);
+  function applyTheme(name){
+    root.classList.remove('dark','ocean','sunset');
+    if(name === 'dark') root.classList.add('dark');
+    else if(name === 'sunset') root.classList.add('sunset');
+    else root.classList.add('ocean'); // default ocean
+    themeBtn.textContent = (name.charAt(0).toUpperCase() + name.slice(1)) + ' ▾';
+    localStorage.setItem('pr-theme', name);
   }
-  const saved = localStorage.getItem('pr-theme');
-  if(saved) { const idx = themes.indexOf(saved); themeIndex = idx >= 0 ? idx : 0; }
-  applyTheme(themeIndex);
-  themeBtn.addEventListener('click', ()=> { themeIndex = (themeIndex+1) % themes.length; applyTheme(themeIndex); });
+  applyTheme(localStorage.getItem('pr-theme') || 'ocean');
+  themeBtn.addEventListener('click', ()=>{
+    // rotate themes: ocean -> light -> dark -> sunset -> ocean
+    const current = localStorage.getItem('pr-theme') || 'ocean';
+    const order = ['ocean','light','dark','sunset'];
+    const next = order[(order.indexOf(current) + 1) % order.length];
+    applyTheme(next);
+  });
 
-  // SIDEBAR
-  const sidebar = el('sidebar');
-  el('openSidebarBtn').addEventListener('click', ()=> { sidebar.style.transform='translateX(0)'; sidebar.setAttribute('aria-hidden','false'); });
-  el('closeSidebar').addEventListener('click', ()=> { sidebar.style.transform='translateX(120%)'; sidebar.setAttribute('aria-hidden','true'); });
+  /* ---------------- Sidebar open/close ---------------- */
+  const sidebar = el('sidebar'), openSidebarBtn = el('openSidebarBtn'), closeSidebar = el('closeSidebar');
+  function openSB(){ sidebar.classList.add('open'); sidebar.setAttribute('aria-hidden','false'); }
+  function closeSB(){ sidebar.classList.remove('open'); sidebar.setAttribute('aria-hidden','true'); }
+  openSidebarBtn.addEventListener('click', ()=> openSB());
+  closeSidebar.addEventListener('click', ()=> closeSB());
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') closeSB(); });
+  document.addEventListener('click', (e)=>{
+    if(!sidebar.classList.contains('open')) return;
+    if(!sidebar.contains(e.target) && !openSidebarBtn.contains(e.target)) closeSB();
+  });
 
-  // INVOICE: items management & calculations
+  /* ================ INVOICE: simple items list, save/load, print ================ */
   const itemsBody = el('itemsBody');
-  const addItemBtn = el('addItem');
-  const clearItemsBtn = el('clearItems');
-  const subVal = el('subVal'), taxVal = el('taxVal'), discVal = el('discVal'), totalVal = el('totalVal');
-  const discountInput = el('discount'), globalTaxInput = el('globalTax');
+  const addItemBtn = el('addItem'), clearItemsBtn = el('clearItems'),
+        subtotalEl = el('subtotal'), taxEl = el('taxTotal'), discEl = el('discountTotal'), grandEl = el('grandTotal');
+  const globalTax = el('globalTax'), globalDiscount = el('globalDiscount');
 
-  // default one item
-  let items = [];
-  function newItem(desc='', qty=1, unit=0, tax=0){
-    return {id: Date.now() + Math.random(), desc, qty: Number(qty) || 1, unit: Number(unit) || 0, tax: Number(tax) || 0};
-  }
-
+  let items = []; // each {desc, qty, unitPrice, taxPct}
   function renderItems(){
     itemsBody.innerHTML = '';
-    items.forEach(it => {
+    items.forEach((it,idx)=>{
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><input data-id="${it.id}" data-field="desc" type="text" value="${escapeHtml(it.desc)}" style="width:100%;padding:6px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)" /></td>
-        <td><input data-id="${it.id}" data-field="qty" type="number" value="${it.qty}" style="width:100%;padding:6px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)" /></td>
-        <td><input data-id="${it.id}" data-field="unit" type="number" value="${it.unit}" step="0.01" style="width:100%;padding:6px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)" /></td>
-        <td><input data-id="${it.id}" data-field="tax" type="number" value="${it.tax}" style="width:100%;padding:6px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)" /></td>
-        <td><div id="line-${it.id}">${formatCurrency(lineTotal(it))}</div></td>
-        <td><button data-id="${it.id}" class="btn ghost" title="Remove">✕</button></td>
+        <td><input data-idx="${idx}" class="input" style="padding:8px" value="${it.desc||''}" data-field="desc"></td>
+        <td><input data-idx="${idx}" class="input" style="padding:8px" value="${it.qty||1}" data-field="qty" type="number" min="0"></td>
+        <td><input data-idx="${idx}" class="input" style="padding:8px" value="${it.unit||0}" data-field="unit" type="number" min="0"></td>
+        <td><input data-idx="${idx}" class="input" style="padding:8px" value="${it.taxPct||0}" data-field="taxPct" type="number" min="0"></td>
+        <td id="line-${idx}">${lineTotal(it).toFixed(2)}</td>
       `;
       itemsBody.appendChild(tr);
     });
-
-    // wire up events
-    itemsBody.querySelectorAll('input').forEach(inp => {
-      inp.addEventListener('input', (e)=>{
-        const id = e.target.dataset.id; const field = e.target.dataset.field;
-        const item = items.find(x=>String(x.id) === String(id));
-        if(!item) return;
-        if(field === 'desc') item.desc = e.target.value;
-        if(field === 'qty') item.qty = Number(e.target.value) || 0;
-        if(field === 'unit') item.unit = Number(e.target.value) || 0;
-        if(field === 'tax') item.tax = Number(e.target.value) || 0;
-        el('line-'+item.id).textContent = formatCurrency(lineTotal(item));
-        calculateTotals();
+    // wire inputs
+    itemsBody.querySelectorAll('input').forEach(inp=>{
+      inp.addEventListener('input', e=>{
+        const idx = Number(e.target.dataset.idx);
+        const f = e.target.dataset.field;
+        let v = e.target.value;
+        if(f === 'qty' || f === 'unit' || f === 'taxPct') v = parseFloat(v) || 0;
+        items[idx][f] = v;
+        el(`line-${idx}`).textContent = lineTotal(items[idx]).toFixed(2);
+        computeTotals();
       });
     });
-    itemsBody.querySelectorAll('button').forEach(b => {
-      b.addEventListener('click', ()=> { const id=b.dataset.id; items = items.filter(x=>String(x.id)!==String(id)); renderItems(); calculateTotals(); });
-    });
+    computeTotals();
+  }
+  function lineTotal(it){
+    const qty = Number(it.qty||0), unit = Number(it.unit||0), tax = Number(it.taxPct||0);
+    const base = qty*unit; const t = base*(tax/100); return base + t;
+  }
+  function computeTotals(){
+    const sub = items.reduce((s,it)=> s + (Number(it.qty||0)*Number(it.unit||0)), 0);
+    const tax = items.reduce((s,it)=> s + (Number(it.qty||0)*Number(it.unit||0))*(Number(it.taxPct||0)/100), 0);
+    const discountPct = Number(globalDiscount.value||0);
+    const discount = Math.max(0, (sub + tax) * (discountPct/100));
+    const globalTaxPct = Number(globalTax.value||0);
+    const extraTax = (sub - (sub*(discountPct/100))) * (globalTaxPct/100);
+    const total = sub + tax + extraTax - discount;
+    subtotalEl.textContent = sub.toFixed(2);
+    taxEl.textContent = (tax + extraTax).toFixed(2);
+    discEl.textContent = discount.toFixed(2);
+    grandEl.textContent = total.toFixed(2);
   }
 
-  function lineTotal(item){
-    const base = (item.qty || 0) * (item.unit || 0);
-    const taxAmt = base * ((Number(item.tax)||0)/100);
-    return base + taxAmt;
-  }
-
-  function calculateTotals(){
-    const subtotal = items.reduce((s,i)=> s + ((i.qty||0)*(i.unit||0)), 0);
-    const perItemTax = items.reduce((s,i)=> s + ((i.qty||0)*(i.unit||0))*((i.tax||0)/100), 0);
-    const globalTax = subtotal * ((Number(globalTaxInput.value)||0)/100);
-    const totalTax = perItemTax + globalTax;
-    const discount = subtotal * ((Number(discountInput.value)||0)/100);
-    const total = Math.max(0, subtotal + totalTax - discount);
-    subVal.textContent = formatCurrency(subtotal);
-    taxVal.textContent = formatCurrency(totalTax);
-    discVal.textContent = formatCurrency(discount);
-    totalVal.textContent = formatCurrency(total);
-  }
-
-  function formatCurrency(n){ return Number(n || 0).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}); }
-  function escapeHtml(s){ return String(s || '').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-  addItemBtn.addEventListener('click', ()=> { items.push(newItem('New item',1,0,0)); renderItems(); calculateTotals(); });
-  clearItemsBtn.addEventListener('click', ()=> { items = []; renderItems(); calculateTotals(); });
-
-  discountInput.addEventListener('input', calculateTotals);
-  globalTaxInput.addEventListener('input', calculateTotals);
-
-  // default: add one empty row
-  items.push(newItem('Sample item',1,9.99,0));
-  renderItems();
-  calculateTotals();
-
-  // Invoice actions: print, export JSON, save/load
-  el('printInvoice').addEventListener('click', ()=> {
-    const invoice = buildInvoicePayload();
-    const printWin = window.open('', '_blank');
-    const html = invoiceToHTML(invoice);
-    printWin.document.open();
-    printWin.document.write(html);
-    printWin.document.close();
-    // slight delay then print
-    setTimeout(()=>{ printWin.focus(); printWin.print(); }, 400);
+  addItemBtn.addEventListener('click', ()=> {
+    items.push({desc:'Item', qty:1, unit:0, taxPct:0});
+    renderItems();
   });
+  clearItemsBtn.addEventListener('click', ()=> {
+    items = []; renderItems();
+  });
+  globalTax.addEventListener('input', computeTotals);
+  globalDiscount.addEventListener('input', computeTotals);
 
-  el('exportJson').addEventListener('click', ()=> {
-    const invoice = buildInvoicePayload();
-    const blob = new Blob([JSON.stringify(invoice, null, 2)], {type:'application/json'});
+  // export / save / print invoice
+  el('exportInvoice').addEventListener('click', ()=>{
+    const payload = {
+      meta: { customer: el('invCustomer').value, invoice: el('invNumber').value, note: el('invNote').value, date: el('invDate').value },
+      items, globalTax: globalTax.value, globalDiscount: globalDiscount.value, totals: { subtotal: subtotalEl.textContent, tax: taxEl.textContent, discount: discEl.textContent, total: grandEl.textContent }
+    };
+    const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'invoice.json'; a.click(); URL.revokeObjectURL(url);
+    const a = document.createElement('a'); a.href = url; a.download = 'invoice.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
   });
 
-  el('saveLocal').addEventListener('click', ()=> {
-    const invoice = buildInvoicePayload();
-    localStorage.setItem('pr-invoice-last', JSON.stringify(invoice));
-    alert('Invoice saved locally.');
+  el('saveInvoice').addEventListener('click', ()=> {
+    const save = {meta:{customer:el('invCustomer').value, invoice:el('invNumber').value, note:el('invNote').value,date:el('invDate').value}, items, globalTax:globalTax.value, globalDiscount:globalDiscount.value};
+    localStorage.setItem('pr-invoice-last', JSON.stringify(save));
+    alert('Saved locally.');
   });
-
-  el('loadLocal').addEventListener('click', ()=> {
-    const raw = localStorage.getItem('pr-invoice-last');
-    if(!raw) return alert('No saved invoice found.');
-    try {
-      const invoice = JSON.parse(raw);
-      // load fields
-      el('companyName').value = invoice.company || '';
-      el('invoiceNumber').value = invoice.number || '';
-      el('invoiceDate').value = invoice.date || '';
-      el('billTo').value = invoice.billTo || '';
-      el('discount').value = invoice.discount || 0;
-      el('globalTax').value = invoice.globalTax || 0;
-      items = (invoice.items || []).map(i => newItem(i.desc, i.qty, i.unit, i.tax));
+  el('loadInvoice').addEventListener('click', ()=> {
+    const s = localStorage.getItem('pr-invoice-last'); if(!s) return alert('No saved invoice found.');
+    try{
+      const parsed = JSON.parse(s);
+      el('invCustomer').value = parsed.meta.customer || '';
+      el('invNumber').value = parsed.meta.invoice || '';
+      el('invNote').value = parsed.meta.note || '';
+      el('invDate').value = parsed.meta.date || '';
+      items = parsed.items || []; globalTax.value = parsed.globalTax || 0; globalDiscount.value = parsed.globalDiscount || 0;
       renderItems();
-      calculateTotals();
-      alert('Loaded saved invoice.');
-    } catch(e){ alert('Failed to load invoice.'); }
+    }catch(e){ alert('Failed to load saved invoice.'); }
   });
-
   el('resetInvoice').addEventListener('click', ()=> {
-    if(!confirm('Reset invoice? This will clear items.')) return;
-    items = [];
-    el('companyName').value=''; el('invoiceNumber').value=''; el('invoiceDate').value=''; el('billTo').value=''; el('discount').value=0; el('globalTax').value=0;
-    renderItems(); calculateTotals();
+    if(!confirm('Reset invoice?')) return;
+    el('invCustomer').value = ''; el('invNumber').value = ''; el('invNote').value = ''; el('invDate').value = '';
+    items = []; globalTax.value = 0; globalDiscount.value = 0; renderItems();
+  });
+  el('printInvoice').addEventListener('click', ()=>{
+    // simple print: build a printable window
+    const w = window.open('','_blank');
+    const html = `<html><head><title>Invoice</title><style>body{font-family:Arial,Helvetica,sans-serif;padding:20px;color:#111}table{width:100%;border-collapse:collapse}td,th{padding:8px;border-bottom:1px solid #eee}</style></head><body>
+      <h2>Invoice — ${el('invCustomer').value || ''}</h2>
+      <div>Ref: ${el('invNumber').value || ''} &nbsp; Date: ${el('invDate').value || ''}</div>
+      <p>${el('invNote').value || ''}</p>
+      <table><thead><tr><th>Description</th><th>Qty</th><th>Unit</th><th>Tax</th><th>Total</th></tr></thead><tbody>
+      ${items.map(it=>`<tr><td>${(it.desc||'').replace(/</g,'&lt;')}</td><td>${it.qty}</td><td>${it.unit}</td><td>${it.taxPct}%</td><td>${(Number(it.qty||0)*Number(it.unit||0)).toFixed(2)}</td></tr>`).join('')}
+      </tbody></table>
+      <div style="text-align:right;margin-top:12px"><strong>Total: ${grandEl.textContent}</strong></div>
+      </body></html>`;
+    w.document.write(html); w.document.close(); w.focus(); setTimeout(()=> w.print(),500);
   });
 
-  function buildInvoicePayload(){
-    return {
-      company: el('companyName').value || '',
-      number: el('invoiceNumber').value || generateInvoiceNumber(),
-      date: el('invoiceDate').value || new Date().toISOString().slice(0,10),
-      billTo: el('billTo').value || '',
-      items: items.map(i => ({desc:i.desc, qty:i.qty, unit:i.unit, tax:i.tax})),
-      discount: Number(el('discount').value)||0,
-      globalTax: Number(el('globalTax').value)||0,
-      totals: { subtotal: Number(subVal.textContent.replace(/,/g,''))||0, tax: Number(taxVal.textContent.replace(/,/g,''))||0, discount: Number(discVal.textContent.replace(/,/g,''))||0, total: Number(totalVal.textContent.replace(/,/g,''))||0 }
-    };
-  }
+  // initial blank
+  items = []; renderItems();
 
-  function generateInvoiceNumber(){
-    return 'INV-' + (new Date()).toISOString().slice(0,10).replace(/-/g,'') + '-' + Math.floor(Math.random()*900+100);
-  }
-
-  function invoiceToHTML(inv){
-    const itemsHtml = inv.items.map(it => `<tr><td style="padding:8px;border-bottom:1px solid #eee">${escapeHtml(it.desc)}</td><td style="padding:8px;border-bottom:1px solid #eee">${it.qty}</td><td style="padding:8px;border-bottom:1px solid #eee">${formatCurrency(it.unit)}</td><td style="padding:8px;border-bottom:1px solid #eee">${it.tax}%</td><td style="padding:8px;border-bottom:1px solid #eee">${formatCurrency((it.qty||0)*(it.unit||0)*(1+(it.tax||0)/100))}</td></tr>`).join('');
-    return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Invoice ${inv.number}</title>
-    <style>body{font-family:Inter,Arial,Helvetica,sans-serif;padding:24px;color:#0b2130} .card{border-radius:10px;padding:18px;border:1px solid #eee;max-width:900px;margin:0 auto} h1{margin:0 0 8px 0} table{width:100%;border-collapse:collapse} th{ text-align:left; color:#666; padding:8px } td{padding:8px}</style></head><body>
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div>
-          <h1>${escapeHtml(inv.company || 'Company')}</h1>
-          <div>${escapeHtml(inv.billTo || '')}</div>
-        </div>
-        <div style="text-align:right">
-          <div><strong>Invoice:</strong> ${escapeHtml(inv.number)}</div>
-          <div><strong>Date:</strong> ${escapeHtml(inv.date)}</div>
-        </div>
-      </div>
-      <hr />
-      <table><thead><tr><th>Description</th><th>Qty</th><th>Unit</th><th>Tax</th><th>Line</th></tr></thead><tbody>${itemsHtml}</tbody></table>
-      <hr />
-      <div style="text-align:right">
-        <div>Subtotal: ${formatCurrency(inv.totals.subtotal)}</div>
-        <div>Tax: ${formatCurrency(inv.totals.tax)}</div>
-        <div>Discount: ${formatCurrency(inv.totals.discount)}</div>
-        <div style="font-weight:900;margin-top:8px">Total: ${formatCurrency(inv.totals.total)}</div>
-      </div>
-    </div>
-    <script>setTimeout(()=>window.print(),400)</script>
-    </body></html>`;
-  }
-
-  // ID Card Designer (canvas drawing & export)
-  const idCanvas = el('idCanvas');
-  const idCtx = idCanvas.getContext('2d');
+  /* ================= ID card designer (canvas) ================= */
+  const idCanvas = el('idCanvas'), idCtx = idCanvas.getContext('2d');
   const idName = el('idName'), idRole = el('idRole'), idCompany = el('idCompany'), idBgColor = el('idBgColor');
-  const idPhotoInput = el('idPhotoInput'), idClearPhoto = el('idClearPhoto');
-  const downloadId = el('downloadId'), saveIdLocal = el('saveIdLocal'), loadIdLocal = el('loadIdLocal');
-
+  const idPhotoInput = el('idPhotoInput'), idClearPhoto = el('idClearPhoto'), downloadId = el('downloadId');
   let idPhoto = null; // Image object
-  idPhotoInput.addEventListener('change', (e)=>{
-    const f = e.target.files && e.target.files[0];
-    if(!f) return;
-    const reader = new FileReader();
-    reader.onload = (ev)=>{
-      const img = new Image();
-      img.onload = ()=> { idPhoto = img; renderIdCanvas(); };
-      img.onerror = ()=> { alert('Failed to load photo. Try re-saving or choosing another image.'); };
-      img.src = ev.target.result;
-    };
-    reader.readAsDataURL(f);
-    idPhotoInput.value = '';
-  });
+  // high-resolution backing canvas size for crisp PNG
+  const CANVAS_W = 1200, CANVAS_H = 760;
+  idCanvas.width = CANVAS_W; idCanvas.height = CANVAS_H;
+  idCanvas.style.width = '100%';
 
-  idClearPhoto.addEventListener('click', ()=> { idPhoto = null; renderIdCanvas(); });
+  function drawId(){
+    // clear
+    idCtx.fillStyle = idBgColor.value || '#ffffff';
+    idCtx.fillRect(0,0,CANVAS_W,CANVAS_H);
 
-  // live re-render on input change
-  [idName, idRole, idCompany, idBgColor].forEach(inp => inp.addEventListener('input', renderIdCanvas));
+    // left color block
+    idCtx.fillStyle = 'rgba(0,0,0,0.04)';
+    idCtx.fillRect(0,0,350,CANVAS_H);
 
-  function renderIdCanvas(){
-    const w = idCanvas.width, h = idCanvas.height;
-    // background
-    idCtx.fillStyle = idBgColor.value || '#6b7dff';
-    idCtx.fillRect(0,0,w,h);
-    // subtle card panel
-    idCtx.fillStyle = 'rgba(255,255,255,0.95)';
-    idCtx.fillRect(18,18,w-36,h-36);
-    // left side for photo
-    const photoX = 36, photoY = 36, photoW = 120, photoH = 120;
-    idCtx.fillStyle = '#f0f4ff';
-    idCtx.fillRect(photoX-6, photoY-6, photoW+12, photoH+12);
+    // company
+    idCtx.fillStyle = '#fff';
+    idCtx.font = '700 44px Inter, Arial';
+    idCtx.fillStyle = '#063242';
+    idCtx.fillText(idCompany.value || 'PirateRuler', 380, 120);
+
+    // name & role
+    idCtx.font = '800 48px Inter, Arial';
+    idCtx.fillStyle = '#0b2130';
+    idCtx.fillText(idName.value || 'Full Name', 380, 220);
+    idCtx.font = '600 28px Inter, Arial';
+    idCtx.fillStyle = 'rgba(11,17,28,0.6)';
+    idCtx.fillText(idRole.value || 'Title / Role', 380, 270);
+
+    // photo box
+    const px = 60, py = 120, pw = 220, ph = 220;
+    idCtx.fillStyle = '#fff';
+    idCtx.strokeStyle = 'rgba(0,0,0,0.06)';
+    idCtx.lineWidth = 4;
+    idCtx.fillRect(px,py,pw,ph);
+    idCtx.strokeRect(px,py,pw,ph);
+
     if(idPhoto){
-      // draw cropped center-fit
-      const srcRatio = idPhoto.width / idPhoto.height;
-      const dstRatio = photoW / photoH;
-      let sx=0, sy=0, sw=idPhoto.width, sh=idPhoto.height;
-      if(srcRatio > dstRatio){
-        // source wider
-        sw = idPhoto.height * dstRatio;
-        sx = (idPhoto.width - sw)/2;
-      } else {
-        sh = idPhoto.width / dstRatio;
-        sy = (idPhoto.height - sh)/2;
-      }
-      idCtx.drawImage(idPhoto, sx, sy, sw, sh, photoX, photoY, photoW, photoH);
+      // draw photo centered & cover within px,py,pw,ph
+      const iw = idPhoto.naturalWidth || idPhoto.width;
+      const ih = idPhoto.naturalHeight || idPhoto.height;
+      // compute cover scale
+      const scale = Math.max(pw/iw, ph/ih);
+      const dw = iw*scale, dh = ih*scale;
+      const dx = px + (pw - dw)/2, dy = py + (ph - dh)/2;
+      idCtx.drawImage(idPhoto, dx, dy, dw, dh);
     } else {
       // placeholder
-      idCtx.fillStyle = '#e8eefb';
-      idCtx.fillRect(photoX, photoY, photoW, photoH);
-      idCtx.fillStyle = '#9aa8ff';
-      idCtx.font = '700 18px Inter, Arial';
-      idCtx.fillText('No photo', photoX+12, photoY + photoH/2 + 6);
+      idCtx.fillStyle = 'rgba(0,0,0,0.03)';
+      idCtx.fillRect(px+10,py+10,pw-20,ph-20);
+      idCtx.fillStyle = 'rgba(0,0,0,0.15)';
+      idCtx.font = '700 20px Inter, Arial';
+      idCtx.fillText('No photo', px+70, py + ph/2);
     }
-
-    // Right text
-    const rightX = photoX + photoW + 20;
-    idCtx.fillStyle = '#0b2130';
-    idCtx.font = '700 20px Inter, Arial';
-    idCtx.fillText(idName.value || 'Full Name', rightX, photoY + 28);
-    idCtx.font = '600 14px Inter, Arial';
-    idCtx.fillStyle = '#495867';
-    idCtx.fillText(idRole.value || 'Role / Title', rightX, photoY + 56);
-    idCtx.font = '600 13px Inter, Arial';
-    idCtx.fillStyle = '#6b7480';
-    idCtx.fillText(idCompany.value || 'Company / Organization', rightX, photoY + 84);
-
-    // small footer
-    idCtx.fillStyle = '#111827';
-    idCtx.font = '600 12px Inter, Arial';
-    idCtx.fillText('PirateRuler ID', w - 120, h - 28);
-    // subtle border
-    idCtx.strokeStyle = 'rgba(0,0,0,0.04)'; idCtx.lineWidth = 1;
-    idCtx.strokeRect(0.5,0.5,w-1,h-1);
   }
 
-  downloadId.addEventListener('click', ()=> {
-    // download canvas data url
-    const url = idCanvas.toDataURL('image/png');
-    const a = document.createElement('a'); a.href = url; a.download = (idName.value ? idName.value.replace(/\s+/g,'_') : 'id_card') + '.png'; a.click();
+  // robust image loading routine for mobile
+  function loadLocalImageFile(file, cb){
+    // prefer FileReader -> dataURL for iOS reliability, fallback to objectURL
+    if(!file) return cb(new Error('No file'));
+    const reader = new FileReader();
+    reader.onerror = () => {
+      // fallback to objectURL
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = ()=> { URL.revokeObjectURL(url); cb(null,img); };
+      img.onerror = (e)=> { URL.revokeObjectURL(url); cb(new Error('Failed to load image')); };
+      img.src = url;
+    };
+    reader.onload = () => {
+      const data = reader.result;
+      const img = new Image();
+      img.onload = ()=> cb(null,img);
+      img.onerror = ()=> cb(new Error('Failed to decode image'));
+      img.src = data;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  idPhotoInput.addEventListener('change', (e)=>{
+    const f = e.target.files && e.target.files[0]; if(!f) return;
+    loadLocalImageFile(f, (err,img)=>{
+      if(err){
+        alert('Could not read photo. On iPhone, try Edit→Done in Photos app then re-upload. Error: '+err.message);
+        return;
+      }
+      idPhoto = img;
+      drawId();
+    });
+  });
+  idClearPhoto.addEventListener('click', ()=> { idPhoto = null; idPhotoInput.value = ''; drawId(); });
+
+  // interactive redraw
+  [idName,idRole,idCompany,idBgColor].forEach(inp => inp.addEventListener('input', drawId));
+  drawId();
+
+  downloadId.addEventListener('click', ()=>{
+    // create high-res PNG and download
+    const link = document.createElement('a');
+    link.href = idCanvas.toDataURL('image/png');
+    link.download = (idName.value || 'id') + '.png';
+    document.body.appendChild(link); link.click(); link.remove();
   });
 
-  saveIdLocal.addEventListener('click', ()=> {
-    const data = {
-      name: idName.value || '',
-      role: idRole.value || '',
-      company: idCompany.value || '',
-      bg: idBgColor.value || '#6b7dff',
+  el('saveId').addEventListener('click', ()=>{
+    const payload = {
+      name: idName.value, role: idRole.value, company: idCompany.value, bg: idBgColor.value,
       photo: idPhoto ? idCanvas.toDataURL('image/png') : null
     };
-    localStorage.setItem('pr-id-last', JSON.stringify(data));
+    localStorage.setItem('pr-id-last', JSON.stringify(payload));
     alert('ID saved locally.');
   });
-
-  loadIdLocal.addEventListener('click', ()=> {
-    const raw = localStorage.getItem('pr-id-last'); if(!raw) return alert('No ID saved.');
-    try {
-      const d = JSON.parse(raw);
-      idName.value = d.name || ''; idRole.value = d.role || ''; idCompany.value = d.company || ''; idBgColor.value = d.bg || '#6b7dff';
-      if(d.photo){
-        const img = new Image(); img.onload = ()=> { idPhoto = img; renderIdCanvas(); }; img.src = d.photo;
-      } else { idPhoto = null; renderIdCanvas(); }
-    } catch(e){ alert('Failed to load ID.'); }
+  el('loadId').addEventListener('click', ()=>{
+    const s = localStorage.getItem('pr-id-last'); if(!s) return alert('No saved ID found.');
+    try{
+      const p = JSON.parse(s);
+      idName.value = p.name || ''; idRole.value = p.role || ''; idCompany.value = p.company || '';
+      if(p.bg) idBgColor.value = p.bg;
+      if(p.photo){
+        const img = new Image();
+        img.onload = ()=> { idPhoto = img; drawId(); };
+        img.src = p.photo;
+      } else { idPhoto = null; drawId(); }
+    }catch(e){ alert('Failed to load saved ID.'); }
   });
 
-  // initial render
-  renderIdCanvas();
+  /* ================ Mobile image issues hint (small improvement) ================ */
+  // Some iOS photos need "edit → done" before pixel reading is allowed; we show clear instructions at load failures
+  // Done via messages on load errors above.
 
-  // helpers for mobile UX: allow paste file or drag drop for photos on phones
-  // click anywhere in logo to focus
-  document.querySelector('.logo').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+  /* ---------------- Small responsive fixes for sidebar width ---------------- */
+  function updateSidebarWidth(){ if(window.innerWidth < 420) sidebar.style.width = '94vw'; else sidebar.style.width = '360px'; }
+  window.addEventListener('resize', updateSidebarWidth); updateSidebarWidth();
 
-  // if user types invoice number blank, generate when printing
-  function ensureInvoiceNumber(){
-    if(!el('invoiceNumber').value) el('invoiceNumber').value = generateInvoiceNumber();
-  }
-  el('printInvoice').addEventListener('click', ensureInvoiceNumber);
+  // ensure canvas is visible after user interaction (prevent mobile auto-dismiss)
+  document.addEventListener('visibilitychange', ()=> { if(!document.hidden) drawId(); });
 
-  // click outside sidebar to close
-  document.addEventListener('click', (e)=>{
-    if(!sidebar.contains(e.target) && e.target !== el('openSidebarBtn')) { sidebar.style.transform='translateX(120%)'; }
+  /* ================= Accessibility + small polish ================= */
+  // prevent accidental form submits on Enter
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' && e.target && e.target.tagName === 'INPUT') e.preventDefault();
   });
 
-  // Basic safeguard: beforeunload warn if unsaved invoice
-  window.addEventListener('beforeunload', (e)=>{
-    // check if items exist
-    if(items.length > 0){
-      e.preventDefault();
-      e.returnValue = '';
-    }
-  });
+  // Small UX: when user taps the file label, open file input (already linked via label for attr)
+  document.querySelectorAll('label.fileLabel').forEach(l => l.addEventListener('click', ()=> {
+    const forId = l.getAttribute('for'); if(forId) el(forId).click();
+  }));
+
+  // friendly startup
+  console.info('PirateRuler Invoice & ID Maker — client-side utilities ready.');
 </script>
 </body>
 </html>
