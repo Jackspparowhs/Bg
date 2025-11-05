@@ -3,671 +3,582 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Background Remove — PirateRuler</title>
+<title>PirateRuler — Invoice & ID Card Maker</title>
+<meta name="description" content="Create invoices and ID cards locally in your browser. No APIs, private & fast." />
 <meta name="theme-color" content="#f7fbff" />
 <link rel="icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect rx="14" width="64" height="64" fill="%236b7dff"/><text x="50%" y="50%" font-family="Inter,Arial,sans-serif" font-weight="800" font-size="26" text-anchor="middle" alignment-baseline="central" fill="white">PR</text></svg>'>
 <style>
-  /* PirateRuler tokens & themes (kept consistent) */
   :root{
     --bg:#f3f7fb; --card:#ffffff; --muted:#6b7480; --text:#0b2130;
     --accent-start:#6b7dff; --accent-end:#0bb3ff;
     --glass: rgba(11,17,28,0.04);
-    --radius:14px; --shadow-lg: 0 18px 50px rgba(3,12,30,0.18);
-    --shadow-sm: 0 8px 24px rgba(3,12,30,0.08);
-    --content-max:1280px;
+    --radius:14px; --shadow-lg: 0 20px 50px rgba(3,12,30,0.14); --shadow-sm: 0 8px 24px rgba(3,12,30,0.07);
+    --content-max:1200px;
   }
-  html.theme-dark { --bg:#071225; --card:#061028; --muted:#98a7bf; --text:#e9f1ff; --accent-start:#5ab3ff; --accent-end:#6b7dff; --glass: rgba(255,255,255,0.02); }
+  html.theme-dark { --bg:#071225; --card:#061028; --muted:#98a7bf; --text:#e9f1ff; --accent-start:#5ab3ff; --accent-end:#6b7dff; }
   html.theme-ocean { --bg:#e8f7fb; --card:#ffffff; --muted:#4f6b75; --text:#063242; --accent-start:#00c2d1; --accent-end:#2b9fff; }
   html.theme-sunset{ --bg:#fff6f8; --card:#fff; --muted:#7a6b77; --text:#2a1020; --accent-start:#ff7aa2; --accent-end:#ffb86b; }
-  html.theme-light { /* same as root */ }
-
   *{box-sizing:border-box}
-  body{
-    margin:0; font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
-    background: linear-gradient(180deg,var(--bg), #e9f6ff);
-    color:var(--text); -webkit-font-smoothing:antialiased;
-  }
+  body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;background:linear-gradient(180deg,var(--bg), #e9f6ff);color:var(--text);-webkit-font-smoothing:antialiased}
   a{color:inherit;text-decoration:none}
   .wrap{max-width:var(--content-max);margin:14px auto;padding:18px}
 
-  /* Header */
-  header.header{
-    display:flex; align-items:center; justify-content:space-between; gap:12px;
-    padding:14px; border-radius:14px;
-    background:linear-gradient(90deg, rgba(107,125,255,0.06), rgba(11,179,255,0.02));
-    box-shadow:var(--shadow-sm);
-  }
+  /* header */
+  header.header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border-radius:14px;background:linear-gradient(90deg, rgba(107,125,255,0.06), rgba(11,179,255,0.02));box-shadow:var(--shadow-sm)}
   .brand{display:flex;align-items:center;gap:12px;min-width:0}
   .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent-start),var(--accent-end));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:20px;flex-shrink:0}
   .brand-text{min-width:0}
   .title-strong{font-weight:900;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .by{font-size:12px;color:var(--muted)}
 
-  /* theme button */
   .controls{display:flex;gap:10px;align-items:center}
   .btn{padding:9px 12px;border-radius:999px;border:none;cursor:pointer;font-weight:800;background:transparent}
   .btn.ghost{background:transparent;border:1px solid rgba(0,0,0,0.06);color:var(--text)}
-  .btn.theme {
-    background:linear-gradient(90deg,var(--accent-start),var(--accent-end));
-    color:white; box-shadow:0 8px 30px rgba(75,120,255,0.18);
-    border-radius:999px;padding:10px 16px;
-  }
+  .btn.theme{background:linear-gradient(90deg,var(--accent-start),var(--accent-end));color:white;box-shadow:0 8px 30px rgba(75,120,255,0.16);border-radius:999px;padding:10px 14px}
 
   /* layout */
-  main{display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start;margin-top:18px;min-height:calc(100vh - 320px)}
-  @media(max-width:980px){ main{grid-template-columns:1fr; } aside.right{position:relative;width:auto} }
+  main{display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start;margin-top:18px;min-height:calc(100vh - 260px)}
+  @media(max-width:980px){ main{grid-template-columns:1fr} aside.right{position:relative;width:auto} }
 
-  /* left */
   .card{background:var(--card);border-radius:14px;padding:18px;box-shadow:var(--shadow-sm);border:1px solid rgba(0,0,0,0.04)}
-  .drop{flex:1;min-height:240px;border-radius:12px;border:2px dashed rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;padding:18px;text-align:center;color:var(--muted);cursor:pointer;background:linear-gradient(180deg, rgba(255,255,255,0.7), transparent)}
-  input[type=file]{display:none}
-  .image-wrap{border-radius:14px;overflow:hidden;margin-top:14px}
-  canvas{display:block;width:100%;height:auto;border-radius:8px;background:transparent}
+  h2{margin:0 0 8px 0;font-size:18px}
+  .muted{color:var(--muted);font-size:13px}
+  input, textarea, select{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);background:transparent;color:var(--text);font-size:14px}
+  .row{display:flex;gap:10px}
+  .small{font-size:13px;color:var(--muted)}
+  .primary{background:linear-gradient(90deg,var(--accent-start),var(--accent-end));color:white;padding:10px 14px;border-radius:10px;border:none;font-weight:800;cursor:pointer}
 
-  /* settings & palette panel */
+  /* Invoice table */
+  table.inv{width:100%;border-collapse:collapse;margin-top:12px}
+  table.inv th, table.inv td{padding:8px;border-bottom:1px solid rgba(0,0,0,0.04);text-align:left}
+  table.inv th{font-weight:800;background:transparent;color:var(--muted);font-size:13px}
+  .table-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .totals{margin-top:12px;display:flex;flex-direction:column;gap:6px;align-items:flex-end;font-weight:800}
+
+  /* ID Card */
+  .id-canvas{border-radius:12px;overflow:hidden;background:linear-gradient(180deg,#fff,#f6fbff);display:block;max-width:320px;width:100%;height:auto;border:1px solid rgba(0,0,0,0.04)}
+  .id-controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+
+  /* right panel features */
   aside.right{align-self:start}
   .panel{padding:14px;border-radius:12px;background:var(--card);box-shadow:var(--shadow-sm);border:1px solid rgba(0,0,0,0.04)}
-  .panel h3{margin:0 0 8px 0;font-weight:900}
-  .muted{color:var(--muted);font-size:13px}
+  .feature{display:flex;gap:12px;align-items:center;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.96));box-shadow:var(--shadow-lg);min-height:84px}
+  .f-icon{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--accent-start),var(--accent-end));flex-shrink:0}
 
-  .controls-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
-  .label{font-weight:800;font-size:13px;margin-right:6px;color:var(--muted)}
-
-  .swatch-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-  .color-swatch{width:36px;height:36px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);cursor:pointer;box-shadow:0 6px 18px rgba(3,12,30,0.06)}
-
-  .range{display:flex;align-items:center;gap:8px}
-  .small{font-size:13px;color:var(--muted)}
-
-  /* info cards */
-  .info-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}
-  @media(min-width:900px){ .info-grid{grid-template-columns:1fr 1fr} }
-  .info-card{padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.96));box-shadow:var(--shadow-lg);border:1px solid rgba(0,0,0,0.04)}
-  .info-card h4{margin:0 0 6px 0;font-size:16px}
-  .info-card p{margin:0;color:var(--muted);font-size:13px}
-
-  /* footer */
   footer{margin-top:18px;padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.96));text-align:center;box-shadow:var(--shadow-lg)}
-  .visit{padding:10px 18px;border-radius:999px;background:linear-gradient(90deg,#ff7aa2 0%, #6b7dff 100%);color:#fff;font-weight:800;text-decoration:none}
+  .visit{padding:10px 18px;border-radius:999px;background:linear-gradient(90deg,#ff7aa2 0%, #6b7dff 100%);color:#fff;font-weight:800;text-decoration:none;display:inline-block}
 
-  /* tiny helpers */
-  .row{display:flex;gap:8px;align-items:center}
-  .flex-fill{flex:1}
-  .muted-block{color:var(--muted);font-size:13px;margin-top:8px}
+  /* responsive tweaks */
+  @media(max-width:480px){ .logo{width:44px;height:44px;font-size:16px;border-radius:10px} .title-strong{font-size:16px} }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <!-- Header -->
     <header class="header">
       <div class="brand">
         <a href="/" aria-label="Home" style="display:flex;align-items:center;gap:12px">
           <div class="logo" aria-hidden="true">PR</div>
           <div class="brand-text">
-            <div class="title-strong">Background Remove</div>
+            <div class="title-strong">Invoice & ID Maker</div>
             <div class="by">by PirateRuler.com</div>
           </div>
         </a>
       </div>
 
       <div class="controls" role="navigation" aria-label="Header controls">
-        <button id="themeBtn" class="btn theme" title="Theme">Ocean ▾</button>
+        <button id="themeBtn" class="btn theme">Ocean ▾</button>
         <button id="openSidebarBtn" class="btn ghost" title="Open menu">☰</button>
       </div>
     </header>
 
-    <!-- Main -->
     <main>
-      <!-- LEFT: uploader + canvas + info -->
-      <section class="card" aria-labelledby="title">
-        <h2 id="title" style="margin:0 0 8px 0">Remove background (client-side)</h2>
-        <div class="muted" style="margin-bottom:12px">Drop or pick an image (PNG/JPG/WEBP). Works on phones & desktop. No uploads.</div>
+      <!-- LEFT: Invoice + ID -->
+      <section class="card" aria-labelledby="mainTitle">
+        <h2 id="mainTitle">Invoice Builder</h2>
+        <div class="muted">Create invoices quickly — add items, set tax & discount, then print or export. Everything runs in your browser (no uploads).</div>
 
-        <div id="dropZone" class="drop" title="Click or drop an image">
-          <div>
-            <div style="font-weight:900">Drop an image here or tap to choose</div>
-            <div class="muted" style="margin-top:6px">PNG / JPG / WEBP — processed locally.</div>
-            <div class="muted small" style="margin-top:8px">Tip: for best results with chroma key, use a plain background.</div>
+        <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">
+          <input id="companyName" type="text" placeholder="Your company name" />
+          <input id="invoiceNumber" type="text" placeholder="Invoice # (auto)" />
+        </div>
+
+        <div class="row" style="margin-top:8px">
+          <input id="billTo" type="text" placeholder="Bill to (client name / address)" />
+          <input id="invoiceDate" type="date" />
+        </div>
+
+        <!-- Items table -->
+        <table class="inv" id="itemsTable" aria-live="polite">
+          <thead>
+            <tr><th style="width:40%">Description</th><th style="width:12%">Qty</th><th style="width:16%">Unit</th><th style="width:12%">Tax %</th><th style="width:14%">Line Total</th><th style="width:6%"></th></tr>
+          </thead>
+          <tbody id="itemsBody"></tbody>
+        </table>
+
+        <div class="table-actions">
+          <button class="primary" id="addItem">Add Item</button>
+          <button class="btn ghost" id="clearItems">Clear Items</button>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">
+          <div style="flex:1;min-width:220px">
+            <label class="small">Discount (%)</label>
+            <input id="discount" type="number" value="0" />
+          </div>
+          <div style="flex:1;min-width:220px">
+            <label class="small">Global Tax (%)</label>
+            <input id="globalTax" type="number" value="0" />
           </div>
         </div>
 
-        <input id="fileInput" type="file" accept="image/*" />
+        <div class="totals" id="totals">
+          <div>Subtotal: <span id="subVal">0.00</span></div>
+          <div>Tax: <span id="taxVal">0.00</span></div>
+          <div>Discount: <span id="discVal">0.00</span></div>
+          <div style="font-size:18px">Total: <span id="totalVal">0.00</span></div>
+        </div>
 
-        <div id="canvasWrap" class="image-wrap" style="display:none">
-          <canvas id="previewCanvas" aria-label="Preview image"></canvas>
-          <div class="row" style="justify-content:space-between;margin-top:10px">
-            <div class="muted small">Tap image to sample a pixel (for chroma key)</div>
-            <div class="row">
-              <button id="zoomIn" class="btn ghost">Zoom +</button>
-              <button id="zoomOut" class="btn ghost">Zoom -</button>
-              <button id="clear" class="btn ghost">Clear</button>
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+          <button id="printInvoice" class="primary">Print Invoice</button>
+          <button id="exportJson" class="btn ghost">Export JSON</button>
+          <button id="saveLocal" class="btn ghost">Save Locally</button>
+          <button id="loadLocal" class="btn ghost">Load Last</button>
+          <button id="resetInvoice" class="btn ghost">Reset</button>
+        </div>
+
+        <hr style="margin-top:18px;border:none;border-top:1px solid rgba(0,0,0,0.04)" />
+
+        <h2 style="margin-top:14px">ID Card Designer</h2>
+        <div class="muted">Design a simple ID card and download as PNG. Upload a photo from your phone and position it.</div>
+
+        <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap">
+          <input id="idName" type="text" placeholder="Full name" />
+          <input id="idRole" type="text" placeholder="Role / Title" />
+        </div>
+        <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap">
+          <input id="idCompany" type="text" placeholder="Company / Org" />
+          <input id="idBgColor" type="color" value="#6b7dff" title="Background color" />
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap">
+          <label class="small" style="margin-right:6px">Photo</label>
+          <input id="idPhotoInput" type="file" accept="image/*" />
+          <button id="idClearPhoto" class="btn ghost">Clear Photo</button>
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+          <canvas id="idCanvas" width="450" height="280" class="id-canvas" aria-label="ID card preview"></canvas>
+          <div style="flex:1;min-width:220px">
+            <div class="id-controls">
+              <button id="downloadId" class="primary">Download ID PNG</button>
+              <button id="saveIdLocal" class="btn ghost">Save ID</button>
+              <button id="loadIdLocal" class="btn ghost">Load ID</button>
             </div>
-          </div>
-        </div>
-
-        <div class="info-grid">
-          <div class="info-card">
-            <h4>How it works</h4>
-            <p>We draw your image into a canvas, create a mask (chroma key or ML segmentation), then composite the foreground over your chosen background. Everything runs inside your browser — images never leave your device.</p>
-          </div>
-          <div class="info-card">
-            <h4>Privacy & Exports</h4>
-            <p>Export PNG with transparent background or flattened over any color. Use ML segmentation for people (loads BodyPix when you choose it).</p>
+            <div style="margin-top:10px" class="small muted">Tip: upload a square headshot for best results. Once designed, click download to get a PNG of the card.</div>
           </div>
         </div>
       </section>
 
-      <!-- RIGHT: controls -->
-      <aside class="right" id="rightPanel">
-        <div class="panel" role="complementary">
-          <h3>Controls</h3>
-          <div class="muted">Choose method, tweak tolerance & smoothing.</div>
-
-          <div class="controls-row" style="margin-top:12px">
-            <button id="chromaBtn" class="btn theme">Use Chroma Key</button>
-            <button id="mlBtn" class="btn ghost" title="Load BodyPix model">Use ML Mask (BodyPix)</button>
-          </div>
-
-          <div style="margin-top:12px">
-            <div class="label">Pick color (from image)</div>
-            <div class="row">
-              <input id="pickedHex" type="text" placeholder="#rrggbb" style="padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);flex:1" />
-              <button id="eyeDrop" class="btn ghost" title="Pick from image">Eyedrop</button>
-            </div>
-            <div class="muted-block">Or click the preview image to sample a pixel.</div>
-          </div>
-
-          <div style="margin-top:12px" class="range">
-            <div class="label">Tolerance</div>
-            <input id="tolerance" type="range" min="0" max="150" value="30" />
-            <div class="small" id="tolVal">30</div>
-          </div>
-
-          <div style="margin-top:10px" class="range">
-            <div class="label">Edge blur</div>
-            <input id="blur" type="range" min="0" max="30" value="6" />
-            <div class="small" id="blurVal">6</div>
-          </div>
-
-          <div style="margin-top:10px" class="range">
-            <div class="label">Alpha threshold</div>
-            <input id="alpha" type="range" min="0" max="255" value="10" />
-            <div class="small" id="alphaVal">10</div>
-          </div>
-
-          <div style="margin-top:12px">
-            <div class="label">Choose background</div>
-            <div class="swatch-row" id="bgSwatches">
-              <!-- preset color swatches -->
-              <div class="color-swatch" style="background:#ffffff" data-hex="#ffffff" title="#ffffff"></div>
-              <div class="color-swatch" style="background:#000000" data-hex="#000000" title="#000000"></div>
-              <div class="color-swatch" style="background:#f7f7ff" data-hex="#f7f7ff" title="#f7f7ff"></div>
-              <div class="color-swatch" style="background:#6b7dff" data-hex="#6b7dff" title="#6b7dff"></div>
-              <div class="color-swatch" style="background:#ff7aa2" data-hex="#ff7aa2" title="#ff7aa2"></div>
-              <div class="color-swatch" style="background:transparent;border:1px dashed rgba(0,0,0,0.08)" data-hex="transparent" title="Transparent">T</div>
+      <!-- RIGHT: Help & features -->
+      <aside class="right">
+        <div class="panel">
+          <div style="display:flex;gap:12px;align-items:center">
+            <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent-start),var(--accent-end));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900">PR</div>
+            <div>
+              <div style="font-weight:900">PirateRuler Tools</div>
+              <div class="muted">Private, client-side utilities — no uploads. Save locally or print directly.</div>
             </div>
           </div>
 
-          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-            <button id="applyBtn" class="btn theme">Apply Background</button>
-            <button id="exportBtn" class="btn ghost">Export PNG</button>
-            <button id="downloadBtn" class="btn ghost">Download Flattened</button>
+          <div style="margin-top:12px">
+            <div style="font-weight:900;margin-bottom:6px">Quick tips</div>
+            <ul class="muted" style="margin:0 0 0 16px;padding:0">
+              <li>Use Print → Save as PDF or physical printer for invoices.</li>
+              <li>Photos from iOS sometimes need Edit → Done to allow pixel reading — if errors occur re-save the photo.</li>
+              <li>Saved invoices & ID cards are stored only in your browser (localStorage).</li>
+            </ul>
           </div>
 
-          <div class="muted-block" style="margin-top:12px">If ML option is used, the model will be downloaded once (BodyPix via CDN). For phones, ML may be slower — chroma key is fastest.</div>
+          <div style="margin-top:12px" class="feature">
+            <div class="f-icon">⚡</div>
+            <div>
+              <div style="font-weight:900">Fast & Local</div>
+              <div class="muted">Everything runs in your browser for privacy and speed.</div>
+            </div>
+          </div>
+
+          <div style="margin-top:8px" class="feature">
+            <div class="f-icon" style="background:linear-gradient(135deg,#7bd6ff,#6b7dff)">📱</div>
+            <div>
+              <div style="font-weight:900">Mobile-friendly</div>
+              <div class="muted">Upload screenshots and photos from your phone camera roll.</div>
+            </div>
+          </div>
         </div>
       </aside>
     </main>
 
-    <!-- Footer -->
     <footer>
       <a class="visit" href="https://pirateruler.com" target="_blank" rel="noopener noreferrer">Visit PirateRuler.com</a>
       <div style="height:12px"></div>
-      <small class="muted">© <span id="year"></span> PirateRuler — private & fast</small>
+      <small class="muted">© <span id="year"></span> PirateRuler — Invoice & ID Maker (client-side)</small>
     </footer>
 
-    <!-- Sidebar (calculator-style) -->
     <aside id="sidebar" style="position:fixed;top:0;right:0;height:100vh;width:360px;transform:translateX(120%);background:var(--card);box-shadow:-40px 0 80px rgba(2,8,20,0.25);padding:20px;border-left:1px solid rgba(0,0,0,0.04);border-radius:0 0 0 14px;overflow:auto;z-index:90;">
       <div style="display:flex;justify-content:flex-end"><button id="closeSidebar" class="btn ghost">Close</button></div>
       <h3>PirateRuler Links</h3>
-      <p class="muted">Quick links & backup resources</p>
+      <p class="muted">Quick links & help</p>
       <nav style="display:flex;flex-direction:column;gap:12px;margin-top:10px">
         <a href="https://www.pirateruler.com/post/about.html" target="_blank" rel="noopener noreferrer">About — PirateRuler</a>
         <a href="https://www.pirateruler.com/post/privacy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
         <a href="https://www.pirateruler.com/post/contact.html" target="_blank" rel="noopener noreferrer">Contact</a>
-        <a href="https://www.pirateruler.com/post/terms.html" target="_blank" rel="noopener noreferrer">Terms & Service</a>
       </nav>
       <div style="margin-top:18px;color:var(--muted);font-size:13px">If this site is offline you can visit PirateRuler for backups & resources:<br><a href="https://pirateruler.com" target="_blank" rel="noopener noreferrer">pirateruler.com</a></div>
     </aside>
-
   </div>
 
 <script>
-  // small helpers & state
-  document.getElementById('year').textContent = new Date().getFullYear();
+  // small helpers
+  const el = id => document.getElementById(id);
+  el('year').textContent = new Date().getFullYear();
+
+  // THEME
   const root = document.documentElement;
-  const themeBtn = document.getElementById('themeBtn');
-  const themes = ['theme-ocean','theme-light','theme-dark','theme-sunset'];
-  const themeNames = { 'theme-ocean':'Ocean', 'theme-light':'Light', 'theme-dark':'Dark', 'theme-sunset':'Sunset' };
-  const savedTheme = localStorage.getItem('pr-theme') || 'theme-ocean';
-  applyTheme(savedTheme);
-  themeBtn.addEventListener('click', ()=> {
-    const current = themes.indexOf([...root.classList].find(c=>themes.includes(c)) || savedTheme);
-    const next = (current + 1) % themes.length;
-    applyTheme(themes[next]);
-    localStorage.setItem('pr-theme', themes[next]);
-  });
-  function applyTheme(cls){
-    themes.forEach(t=> root.classList.remove(t));
+  const themeBtn = el('themeBtn');
+  const themes = ['theme-ocean','theme-sunset','theme-dark'];
+  let themeIndex = 0;
+  function applyTheme(i){
+    themes.forEach(t => root.classList.remove(t));
+    const cls = themes[i % themes.length];
     root.classList.add(cls);
-    themeBtn.textContent = (themeNames[cls] || 'Ocean') + ' ▾';
+    themeBtn.textContent = (cls === 'theme-ocean' ? 'Ocean' : cls === 'theme-sunset' ? 'Sunset' : 'Dark') + ' ▾';
+    localStorage.setItem('pr-theme', cls);
+  }
+  const saved = localStorage.getItem('pr-theme');
+  if(saved) { const idx = themes.indexOf(saved); themeIndex = idx >= 0 ? idx : 0; }
+  applyTheme(themeIndex);
+  themeBtn.addEventListener('click', ()=> { themeIndex = (themeIndex+1) % themes.length; applyTheme(themeIndex); });
+
+  // SIDEBAR
+  const sidebar = el('sidebar');
+  el('openSidebarBtn').addEventListener('click', ()=> { sidebar.style.transform='translateX(0)'; sidebar.setAttribute('aria-hidden','false'); });
+  el('closeSidebar').addEventListener('click', ()=> { sidebar.style.transform='translateX(120%)'; sidebar.setAttribute('aria-hidden','true'); });
+
+  // INVOICE: items management & calculations
+  const itemsBody = el('itemsBody');
+  const addItemBtn = el('addItem');
+  const clearItemsBtn = el('clearItems');
+  const subVal = el('subVal'), taxVal = el('taxVal'), discVal = el('discVal'), totalVal = el('totalVal');
+  const discountInput = el('discount'), globalTaxInput = el('globalTax');
+
+  // default one item
+  let items = [];
+  function newItem(desc='', qty=1, unit=0, tax=0){
+    return {id: Date.now() + Math.random(), desc, qty: Number(qty) || 1, unit: Number(unit) || 0, tax: Number(tax) || 0};
   }
 
-  // Sidebar open/close
-  const sidebar = document.getElementById('sidebar');
-  const openSidebarBtn = document.getElementById('openSidebarBtn');
-  const closeSidebarBtn = document.getElementById('closeSidebar');
-  function openSidebar(){ sidebar.style.transform='translateX(0)'; sidebar.setAttribute('aria-hidden','false'); }
-  function closeSidebar(){ sidebar.style.transform='translateX(120%)'; sidebar.setAttribute('aria-hidden','true'); }
-  openSidebarBtn.addEventListener('click', ()=> {
-    if(window.innerWidth < 980){ openSidebar(); sidebar.scrollIntoView({behavior:'smooth'}); } else openSidebar();
-  });
-  closeSidebarBtn.addEventListener('click', closeSidebar);
-  document.addEventListener('keydown', e=> { if(e.key === 'Escape') closeSidebar(); });
+  function renderItems(){
+    itemsBody.innerHTML = '';
+    items.forEach(it => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input data-id="${it.id}" data-field="desc" type="text" value="${escapeHtml(it.desc)}" style="width:100%;padding:6px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)" /></td>
+        <td><input data-id="${it.id}" data-field="qty" type="number" value="${it.qty}" style="width:100%;padding:6px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)" /></td>
+        <td><input data-id="${it.id}" data-field="unit" type="number" value="${it.unit}" step="0.01" style="width:100%;padding:6px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)" /></td>
+        <td><input data-id="${it.id}" data-field="tax" type="number" value="${it.tax}" style="width:100%;padding:6px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)" /></td>
+        <td><div id="line-${it.id}">${formatCurrency(lineTotal(it))}</div></td>
+        <td><button data-id="${it.id}" class="btn ghost" title="Remove">✕</button></td>
+      `;
+      itemsBody.appendChild(tr);
+    });
 
-  // Elements
-  const drop = document.getElementById('dropZone');
-  const fileIn = document.getElementById('fileInput');
-  const canvas = document.getElementById('previewCanvas');
-  const ctx = canvas.getContext('2d', { willReadFrequently:true });
-  const canvasWrap = document.getElementById('canvasWrap');
-  const chromaBtn = document.getElementById('chromaBtn');
-  const mlBtn = document.getElementById('mlBtn');
-  const pickedHex = document.getElementById('pickedHex');
-  const eyeDrop = document.getElementById('eyeDrop');
-  const tolerance = document.getElementById('tolerance');
-  const tolVal = document.getElementById('tolVal');
-  const blur = document.getElementById('blur');
-  const blurVal = document.getElementById('blurVal');
-  const alpha = document.getElementById('alpha');
-  const alphaVal = document.getElementById('alphaVal');
-  const bgSwatches = document.getElementById('bgSwatches');
-  const applyBtn = document.getElementById('applyBtn');
-  const exportBtn = document.getElementById('exportBtn');
-  const downloadBtn = document.getElementById('downloadBtn');
-  const extractBtn = document.getElementById('chromaBtn'); // alias
-
-  let img = new Image();
-  let imgLoaded = false;
-  let scale = 1;
-  let originalImageData = null;
-  let currentBg = '#ffffff';
-  let pickedColor = null;
-  let eyeDropActive = false;
-
-  // optional ML model
-  let bodypixModel = null;
-  let usingML = false;
-  const loadBodypix = async ()=>{
-    if(bodypixModel) return bodypixModel;
-    mlBtn.textContent = 'Loading model...';
-    // load tfjs and body-pix from CDN
-    // If you prefer MediaPipe, we can switch — BodyPix is simple to demo.
-    try{
-      if(!window.tf){
-        await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js');
-      }
-      if(!window.bodyPix){
-        await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix@2.2.0/dist/body-pix.min.js');
-      }
-      bodypixModel = await bodyPix.load({architecture:'MobileNetV1', multiplier:0.5, outputStride:16});
-      mlBtn.textContent = 'Use ML Mask (BodyPix)';
-      return bodypixModel;
-    }catch(e){
-      console.error(e);
-      alert('Failed to load ML model. Use chroma key or try again.');
-      mlBtn.textContent = 'Use ML Mask (BodyPix)';
-    }
-  };
-
-  function loadScript(src){
-    return new Promise((res, rej)=>{
-      const s = document.createElement('script'); s.src = src; s.onload = ()=> res(); s.onerror = ()=> rej();
-      document.head.appendChild(s);
+    // wire up events
+    itemsBody.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('input', (e)=>{
+        const id = e.target.dataset.id; const field = e.target.dataset.field;
+        const item = items.find(x=>String(x.id) === String(id));
+        if(!item) return;
+        if(field === 'desc') item.desc = e.target.value;
+        if(field === 'qty') item.qty = Number(e.target.value) || 0;
+        if(field === 'unit') item.unit = Number(e.target.value) || 0;
+        if(field === 'tax') item.tax = Number(e.target.value) || 0;
+        el('line-'+item.id).textContent = formatCurrency(lineTotal(item));
+        calculateTotals();
+      });
+    });
+    itemsBody.querySelectorAll('button').forEach(b => {
+      b.addEventListener('click', ()=> { const id=b.dataset.id; items = items.filter(x=>String(x.id)!==String(id)); renderItems(); calculateTotals(); });
     });
   }
 
-  // file handling (works on mobile/desktop)
-  drop.addEventListener('click', ()=> fileIn.click());
-  drop.addEventListener('dragover', e=> { e.preventDefault(); drop.style.borderColor='rgba(0,0,0,0.12)'; });
-  drop.addEventListener('dragleave', e=> { e.preventDefault(); drop.style.borderColor=''; });
-  drop.addEventListener('drop', e=> { e.preventDefault(); const f = e.dataTransfer.files && e.dataTransfer.files[0]; if(f) handleFile(f); });
+  function lineTotal(item){
+    const base = (item.qty || 0) * (item.unit || 0);
+    const taxAmt = base * ((Number(item.tax)||0)/100);
+    return base + taxAmt;
+  }
 
-  fileIn.addEventListener('change', e=> { if(e.target.files[0]) handleFile(e.target.files[0]); });
+  function calculateTotals(){
+    const subtotal = items.reduce((s,i)=> s + ((i.qty||0)*(i.unit||0)), 0);
+    const perItemTax = items.reduce((s,i)=> s + ((i.qty||0)*(i.unit||0))*((i.tax||0)/100), 0);
+    const globalTax = subtotal * ((Number(globalTaxInput.value)||0)/100);
+    const totalTax = perItemTax + globalTax;
+    const discount = subtotal * ((Number(discountInput.value)||0)/100);
+    const total = Math.max(0, subtotal + totalTax - discount);
+    subVal.textContent = formatCurrency(subtotal);
+    taxVal.textContent = formatCurrency(totalTax);
+    discVal.textContent = formatCurrency(discount);
+    totalVal.textContent = formatCurrency(total);
+  }
 
-  function handleFile(file){
-    if(!file.type.startsWith('image/')) return alert('Choose an image file.');
+  function formatCurrency(n){ return Number(n || 0).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}); }
+  function escapeHtml(s){ return String(s || '').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  addItemBtn.addEventListener('click', ()=> { items.push(newItem('New item',1,0,0)); renderItems(); calculateTotals(); });
+  clearItemsBtn.addEventListener('click', ()=> { items = []; renderItems(); calculateTotals(); });
+
+  discountInput.addEventListener('input', calculateTotals);
+  globalTaxInput.addEventListener('input', calculateTotals);
+
+  // default: add one empty row
+  items.push(newItem('Sample item',1,9.99,0));
+  renderItems();
+  calculateTotals();
+
+  // Invoice actions: print, export JSON, save/load
+  el('printInvoice').addEventListener('click', ()=> {
+    const invoice = buildInvoicePayload();
+    const printWin = window.open('', '_blank');
+    const html = invoiceToHTML(invoice);
+    printWin.document.open();
+    printWin.document.write(html);
+    printWin.document.close();
+    // slight delay then print
+    setTimeout(()=>{ printWin.focus(); printWin.print(); }, 400);
+  });
+
+  el('exportJson').addEventListener('click', ()=> {
+    const invoice = buildInvoicePayload();
+    const blob = new Blob([JSON.stringify(invoice, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'invoice.json'; a.click(); URL.revokeObjectURL(url);
+  });
+
+  el('saveLocal').addEventListener('click', ()=> {
+    const invoice = buildInvoicePayload();
+    localStorage.setItem('pr-invoice-last', JSON.stringify(invoice));
+    alert('Invoice saved locally.');
+  });
+
+  el('loadLocal').addEventListener('click', ()=> {
+    const raw = localStorage.getItem('pr-invoice-last');
+    if(!raw) return alert('No saved invoice found.');
+    try {
+      const invoice = JSON.parse(raw);
+      // load fields
+      el('companyName').value = invoice.company || '';
+      el('invoiceNumber').value = invoice.number || '';
+      el('invoiceDate').value = invoice.date || '';
+      el('billTo').value = invoice.billTo || '';
+      el('discount').value = invoice.discount || 0;
+      el('globalTax').value = invoice.globalTax || 0;
+      items = (invoice.items || []).map(i => newItem(i.desc, i.qty, i.unit, i.tax));
+      renderItems();
+      calculateTotals();
+      alert('Loaded saved invoice.');
+    } catch(e){ alert('Failed to load invoice.'); }
+  });
+
+  el('resetInvoice').addEventListener('click', ()=> {
+    if(!confirm('Reset invoice? This will clear items.')) return;
+    items = [];
+    el('companyName').value=''; el('invoiceNumber').value=''; el('invoiceDate').value=''; el('billTo').value=''; el('discount').value=0; el('globalTax').value=0;
+    renderItems(); calculateTotals();
+  });
+
+  function buildInvoicePayload(){
+    return {
+      company: el('companyName').value || '',
+      number: el('invoiceNumber').value || generateInvoiceNumber(),
+      date: el('invoiceDate').value || new Date().toISOString().slice(0,10),
+      billTo: el('billTo').value || '',
+      items: items.map(i => ({desc:i.desc, qty:i.qty, unit:i.unit, tax:i.tax})),
+      discount: Number(el('discount').value)||0,
+      globalTax: Number(el('globalTax').value)||0,
+      totals: { subtotal: Number(subVal.textContent.replace(/,/g,''))||0, tax: Number(taxVal.textContent.replace(/,/g,''))||0, discount: Number(discVal.textContent.replace(/,/g,''))||0, total: Number(totalVal.textContent.replace(/,/g,''))||0 }
+    };
+  }
+
+  function generateInvoiceNumber(){
+    return 'INV-' + (new Date()).toISOString().slice(0,10).replace(/-/g,'') + '-' + Math.floor(Math.random()*900+100);
+  }
+
+  function invoiceToHTML(inv){
+    const itemsHtml = inv.items.map(it => `<tr><td style="padding:8px;border-bottom:1px solid #eee">${escapeHtml(it.desc)}</td><td style="padding:8px;border-bottom:1px solid #eee">${it.qty}</td><td style="padding:8px;border-bottom:1px solid #eee">${formatCurrency(it.unit)}</td><td style="padding:8px;border-bottom:1px solid #eee">${it.tax}%</td><td style="padding:8px;border-bottom:1px solid #eee">${formatCurrency((it.qty||0)*(it.unit||0)*(1+(it.tax||0)/100))}</td></tr>`).join('');
+    return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Invoice ${inv.number}</title>
+    <style>body{font-family:Inter,Arial,Helvetica,sans-serif;padding:24px;color:#0b2130} .card{border-radius:10px;padding:18px;border:1px solid #eee;max-width:900px;margin:0 auto} h1{margin:0 0 8px 0} table{width:100%;border-collapse:collapse} th{ text-align:left; color:#666; padding:8px } td{padding:8px}</style></head><body>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <h1>${escapeHtml(inv.company || 'Company')}</h1>
+          <div>${escapeHtml(inv.billTo || '')}</div>
+        </div>
+        <div style="text-align:right">
+          <div><strong>Invoice:</strong> ${escapeHtml(inv.number)}</div>
+          <div><strong>Date:</strong> ${escapeHtml(inv.date)}</div>
+        </div>
+      </div>
+      <hr />
+      <table><thead><tr><th>Description</th><th>Qty</th><th>Unit</th><th>Tax</th><th>Line</th></tr></thead><tbody>${itemsHtml}</tbody></table>
+      <hr />
+      <div style="text-align:right">
+        <div>Subtotal: ${formatCurrency(inv.totals.subtotal)}</div>
+        <div>Tax: ${formatCurrency(inv.totals.tax)}</div>
+        <div>Discount: ${formatCurrency(inv.totals.discount)}</div>
+        <div style="font-weight:900;margin-top:8px">Total: ${formatCurrency(inv.totals.total)}</div>
+      </div>
+    </div>
+    <script>setTimeout(()=>window.print(),400)</script>
+    </body></html>`;
+  }
+
+  // ID Card Designer (canvas drawing & export)
+  const idCanvas = el('idCanvas');
+  const idCtx = idCanvas.getContext('2d');
+  const idName = el('idName'), idRole = el('idRole'), idCompany = el('idCompany'), idBgColor = el('idBgColor');
+  const idPhotoInput = el('idPhotoInput'), idClearPhoto = el('idClearPhoto');
+  const downloadId = el('downloadId'), saveIdLocal = el('saveIdLocal'), loadIdLocal = el('loadIdLocal');
+
+  let idPhoto = null; // Image object
+  idPhotoInput.addEventListener('change', (e)=>{
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
     const reader = new FileReader();
-    reader.onload = (ev) => {
-      loadImage(ev.target.result);
+    reader.onload = (ev)=>{
+      const img = new Image();
+      img.onload = ()=> { idPhoto = img; renderIdCanvas(); };
+      img.onerror = ()=> { alert('Failed to load photo. Try re-saving or choosing another image.'); };
+      img.src = ev.target.result;
     };
-    reader.readAsDataURL(file);
-    // clear input to enable reselecting same file later
-    fileIn.value = '';
+    reader.readAsDataURL(f);
+    idPhotoInput.value = '';
+  });
+
+  idClearPhoto.addEventListener('click', ()=> { idPhoto = null; renderIdCanvas(); });
+
+  // live re-render on input change
+  [idName, idRole, idCompany, idBgColor].forEach(inp => inp.addEventListener('input', renderIdCanvas));
+
+  function renderIdCanvas(){
+    const w = idCanvas.width, h = idCanvas.height;
+    // background
+    idCtx.fillStyle = idBgColor.value || '#6b7dff';
+    idCtx.fillRect(0,0,w,h);
+    // subtle card panel
+    idCtx.fillStyle = 'rgba(255,255,255,0.95)';
+    idCtx.fillRect(18,18,w-36,h-36);
+    // left side for photo
+    const photoX = 36, photoY = 36, photoW = 120, photoH = 120;
+    idCtx.fillStyle = '#f0f4ff';
+    idCtx.fillRect(photoX-6, photoY-6, photoW+12, photoH+12);
+    if(idPhoto){
+      // draw cropped center-fit
+      const srcRatio = idPhoto.width / idPhoto.height;
+      const dstRatio = photoW / photoH;
+      let sx=0, sy=0, sw=idPhoto.width, sh=idPhoto.height;
+      if(srcRatio > dstRatio){
+        // source wider
+        sw = idPhoto.height * dstRatio;
+        sx = (idPhoto.width - sw)/2;
+      } else {
+        sh = idPhoto.width / dstRatio;
+        sy = (idPhoto.height - sh)/2;
+      }
+      idCtx.drawImage(idPhoto, sx, sy, sw, sh, photoX, photoY, photoW, photoH);
+    } else {
+      // placeholder
+      idCtx.fillStyle = '#e8eefb';
+      idCtx.fillRect(photoX, photoY, photoW, photoH);
+      idCtx.fillStyle = '#9aa8ff';
+      idCtx.font = '700 18px Inter, Arial';
+      idCtx.fillText('No photo', photoX+12, photoY + photoH/2 + 6);
+    }
+
+    // Right text
+    const rightX = photoX + photoW + 20;
+    idCtx.fillStyle = '#0b2130';
+    idCtx.font = '700 20px Inter, Arial';
+    idCtx.fillText(idName.value || 'Full Name', rightX, photoY + 28);
+    idCtx.font = '600 14px Inter, Arial';
+    idCtx.fillStyle = '#495867';
+    idCtx.fillText(idRole.value || 'Role / Title', rightX, photoY + 56);
+    idCtx.font = '600 13px Inter, Arial';
+    idCtx.fillStyle = '#6b7480';
+    idCtx.fillText(idCompany.value || 'Company / Organization', rightX, photoY + 84);
+
+    // small footer
+    idCtx.fillStyle = '#111827';
+    idCtx.font = '600 12px Inter, Arial';
+    idCtx.fillText('PirateRuler ID', w - 120, h - 28);
+    // subtle border
+    idCtx.strokeStyle = 'rgba(0,0,0,0.04)'; idCtx.lineWidth = 1;
+    idCtx.strokeRect(0.5,0.5,w-1,h-1);
   }
 
-  function loadImage(src){
-    img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = ()=> {
-      // scale to fit nicely (max width depends on viewport)
-      const maxW = Math.min(1200, window.innerWidth - 420);
-      const maxH = 900;
-      let w = img.naturalWidth, h = img.naturalHeight;
-      const ratio = Math.min(1, maxW/w, maxH/h);
-      w = Math.round(w * ratio); h = Math.round(h * ratio);
-      scale = 1;
-      canvas.width = w; canvas.height = h;
-      ctx.clearRect(0,0,w,h);
-      ctx.drawImage(img, 0, 0, w, h);
-      canvasWrap.style.display = 'block';
-      imgLoaded = true;
-      // save original data for reprocessing
-      try{
-        originalImageData = ctx.getImageData(0,0,w,h);
-      }catch(e){
-        // some browser cross-origin / format weirdness -> still try
-        originalImageData = null;
-        console.warn('Could not get image data immediately', e);
-      }
+  downloadId.addEventListener('click', ()=> {
+    // download canvas data url
+    const url = idCanvas.toDataURL('image/png');
+    const a = document.createElement('a'); a.href = url; a.download = (idName.value ? idName.value.replace(/\s+/g,'_') : 'id_card') + '.png'; a.click();
+  });
+
+  saveIdLocal.addEventListener('click', ()=> {
+    const data = {
+      name: idName.value || '',
+      role: idRole.value || '',
+      company: idCompany.value || '',
+      bg: idBgColor.value || '#6b7dff',
+      photo: idPhoto ? idCanvas.toDataURL('image/png') : null
     };
-    img.onerror = ()=> alert('Could not load image. Try another file or re-save the image as PNG/JPG.');
-    img.src = src;
+    localStorage.setItem('pr-id-last', JSON.stringify(data));
+    alert('ID saved locally.');
+  });
+
+  loadIdLocal.addEventListener('click', ()=> {
+    const raw = localStorage.getItem('pr-id-last'); if(!raw) return alert('No ID saved.');
+    try {
+      const d = JSON.parse(raw);
+      idName.value = d.name || ''; idRole.value = d.role || ''; idCompany.value = d.company || ''; idBgColor.value = d.bg || '#6b7dff';
+      if(d.photo){
+        const img = new Image(); img.onload = ()=> { idPhoto = img; renderIdCanvas(); }; img.src = d.photo;
+      } else { idPhoto = null; renderIdCanvas(); }
+    } catch(e){ alert('Failed to load ID.'); }
+  });
+
+  // initial render
+  renderIdCanvas();
+
+  // helpers for mobile UX: allow paste file or drag drop for photos on phones
+  // click anywhere in logo to focus
+  document.querySelector('.logo').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+
+  // if user types invoice number blank, generate when printing
+  function ensureInvoiceNumber(){
+    if(!el('invoiceNumber').value) el('invoiceNumber').value = generateInvoiceNumber();
   }
+  el('printInvoice').addEventListener('click', ensureInvoiceNumber);
 
-  // zoom buttons
-  document.getElementById('zoomIn').addEventListener('click', ()=> {
-    if(!imgLoaded) return;
-    scale = Math.min(3, scale + 0.25);
-    resizeCanvas();
-  });
-  document.getElementById('zoomOut').addEventListener('click', ()=> {
-    if(!imgLoaded) return;
-    scale = Math.max(0.5, scale - 0.25);
-    resizeCanvas();
-  });
-  function resizeCanvas(){
-    if(!imgLoaded) return;
-    const maxW = Math.min(1200, window.innerWidth - 420);
-    const w = Math.round(Math.min(img.naturalWidth, maxW) * scale);
-    const h = Math.round(w * (img.naturalHeight / img.naturalWidth));
-    canvas.width = w; canvas.height = h;
-    ctx.clearRect(0,0,w,h);
-    ctx.drawImage(img, 0, 0, w, h);
-  }
-
-  // sample pixel when clicking the canvas (for eyedrop)
-  canvas.addEventListener('click', (e)=>{
-    if(!imgLoaded) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = Math.floor((e.clientX - rect.left) * (canvas.width / rect.width));
-    const y = Math.floor((e.clientY - rect.top) * (canvas.height / rect.height));
-    try{
-      const px = ctx.getImageData(x, y, 1, 1).data;
-      const hex = rgbToHex(px[0], px[1], px[2]);
-      pickedHex.value = hex;
-      pickedColor = hex;
-      // visually show selection briefly
-      canvas.style.outline = `3px solid ${hex}`;
-      setTimeout(()=> canvas.style.outline = 'none', 400);
-      if(eyeDropActive) eyeDropActive = false;
-    }catch(e){
-      console.error('sample failed', e);
-    }
+  // click outside sidebar to close
+  document.addEventListener('click', (e)=>{
+    if(!sidebar.contains(e.target) && e.target !== el('openSidebarBtn')) { sidebar.style.transform='translateX(120%)'; }
   });
 
-  // eyedrop button toggles message (we sample on canvas click)
-  eyeDrop.addEventListener('click', ()=> {
-    eyeDropActive = true;
-    alert('Tap/click the image to pick a color (sample).');
-  });
-
-  // slider UI
-  tolerance.addEventListener('input', ()=> tolVal.textContent = tolerance.value);
-  blur.addEventListener('input', ()=> blurVal.textContent = blur.value);
-  alpha.addEventListener('input', ()=> alphaVal.textContent = alpha.value);
-
-  // background swatches
-  bgSwatches.querySelectorAll('.color-swatch').forEach(sw=>{
-    sw.addEventListener('click', ()=> {
-      const hx = sw.dataset.hex;
-      currentBg = hx;
-      // visually indicate selected
-      bgSwatches.querySelectorAll('.color-swatch').forEach(s=> s.style.outline = 'none');
-      sw.style.outline = '3px solid rgba(0,0,0,0.08)';
-    });
-  });
-  // default selected
-  currentBg = '#ffffff'; bgSwatches.querySelector('[data-hex="#ffffff"]').style.outline = '3px solid rgba(0,0,0,0.08)';
-
-  // CHROMA KEY logic
-  async function chromaKeyProcess(){
-    if(!imgLoaded) return alert('Load an image first.');
-    let key = pickedHex.value.trim();
-    if(!/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(key)) {
-      return alert('Enter a valid hex color (e.g. #00ff88) or pick a pixel from the image.');
-    }
-    pickedColor = hexToRgb(key);
-    const tol = parseInt(tolerance.value,10) || 30;
-    const blurpx = parseInt(blur.value,10) || 6;
-    const alphath = parseInt(alpha.value,10) || 10;
-
-    // ensure we have fresh image data
-    const w = canvas.width, h = canvas.height;
-    let imgData;
-    try{ imgData = ctx.getImageData(0,0,w,h); }catch(e){
-      alert('Could not access image pixels (this image might be blocked by cross-origin). Try re-saving the image locally as PNG/JPG and re-uploading.');
-      console.error(e);
-      return;
-    }
-    const data = imgData.data;
-    // build alpha mask
-    const mask = new Uint8ClampedArray(w*h);
-    for(let i=0;i<w*h;i++){
-      const r = data[i*4], g = data[i*4+1], b = data[i*4+2], a = data[i*4+3];
-      // distance in RGB space
-      const d = Math.sqrt((r - pickedColor.r)**2 + (g - pickedColor.g)**2 + (b - pickedColor.b)**2);
-      // if close to key color -> treat as background
-      mask[i] = (d <= tol || a === 0) ? 0 : 255;
-    }
-
-    // optional blur to smooth edges (simple box blur)
-    if(blurpx > 0){
-      boxBlurMask(mask, w, h, blurpx);
-    }
-
-    // apply alpha threshold
-    for(let i=0;i<w*h;i++){
-      data[i*4+3] = (mask[i] > alphath) ? 255 : 0;
-    }
-    // draw masked image onto result canvas
-    ctx.putImageData(imgData, 0, 0);
-    originalImageData = imgData; // save for later reapply
-    usingML = false;
-    // show result superimposed over selected background when Apply Background clicked (separate step)
-    alert('Chroma key processed — Click "Apply Background" to see result with chosen background.');
-  }
-
-  // Apply background: composite masked canvas over chosen color or transparent
-  function applyBackground(){
-    if(!imgLoaded) return alert('Load an image first.');
-    if(!originalImageData) {
-      // if no mask applied, use full image
-      originalImageData = ctx.getImageData(0,0,canvas.width,canvas.height);
-    }
-    const w = canvas.width, h = canvas.height;
-    // create a temp canvas to composite
-    const c = document.createElement('canvas'); c.width = w; c.height = h;
-    const g = c.getContext('2d');
-    // fill background
-    if(currentBg === 'transparent'){
-      g.clearRect(0,0,w,h);
-    } else {
-      g.fillStyle = currentBg; g.fillRect(0,0,w,h);
-    }
-    // draw the imageData (which has alpha in .data)
-    g.putImageData(originalImageData, 0, 0);
-    // replace preview
-    canvas.width = w; canvas.height = h;
-    ctx.clearRect(0,0,w,h);
-    ctx.drawImage(c,0,0);
-    // leave originalImageData as the composited result for export
-    originalImageData = ctx.getImageData(0,0,w,h);
-    alert('Background applied — use Export to download PNG.');
-  }
-
-  // EXPORT: PNG with transparency (current canvas)
-  exportBtn.addEventListener('click', ()=> {
-    if(!imgLoaded) return alert('Load an image first.');
-    // For transparency export, ensure the current canvas contains alpha
-    const url = canvas.toDataURL('image/png');
-    const a = document.createElement('a'); a.href = url; a.download = 'bg-removed.png'; document.body.appendChild(a); a.click(); a.remove();
-  });
-
-  // Download flattened (over currentBg color)
-  downloadBtn.addEventListener('click', ()=> {
-    if(!imgLoaded) return alert('Load an image first.');
-    // Already composited in originalImageData if Apply Background was used; if not, compose now
-    if(!originalImageData) originalImageData = ctx.getImageData(0,0,canvas.width,canvas.height);
-    const w = canvas.width, h = canvas.height;
-    const tmp = document.createElement('canvas'); tmp.width = w; tmp.height = h;
-    const g = tmp.getContext('2d');
-    if(currentBg === 'transparent'){
-      g.clearRect(0,0,w,h);
-    } else {
-      g.fillStyle = currentBg; g.fillRect(0,0,w,h);
-    }
-    g.putImageData(originalImageData,0,0);
-    const url = tmp.toDataURL('image/png');
-    const a = document.createElement('a'); a.href = url; a.download = 'flattened.png'; document.body.appendChild(a); a.click(); a.remove();
-  });
-
-  // Attach the chroma key action
-  chromaBtn.addEventListener('click', chromaKeyProcess);
-
-  // ML Mask path
-  mlBtn.addEventListener('click', async ()=>{
-    if(!imgLoaded) return alert('Load an image first.');
-    await loadBodypix();
-    if(!bodypixModel) return;
-    mlBtn.textContent = 'Processing...';
-    try{
-      const segmentation = await bodypixModel.segmentPerson(canvas, { internalResolution:'medium', segmentationThreshold:0.7 });
-      // segmentation has data boolean mask
-      const w = canvas.width, h = canvas.height;
-      const imgData = ctx.getImageData(0,0,w,h);
-      const data = imgData.data;
-      for(let y=0;y<h;y++){
-        for(let x=0;x<w;x++){
-          const i = y*w + x;
-          const inside = segmentation.data[i]; // true if person
-          // if not inside person => background -> set alpha 0
-          data[i*4+3] = inside ? 255 : 0;
-        }
-      }
-      // optional blur to smooth edges
-      const blurpx = parseInt(blur.value,10) || 6;
-      if(blurpx>0){
-        // blur alpha channel by doing a quick mask blur & reapply threshold
-        const mask = new Uint8ClampedArray(w*h);
-        for(let i=0;i<w*h;i++) mask[i] = imgData.data[i*4+3];
-        boxBlurMask(mask,w,h,blurpx);
-        const alphath = parseInt(alpha.value,10) || 10;
-        for(let i=0;i<w*h;i++){
-          imgData.data[i*4+3] = (mask[i] > alphath) ? 255 : 0;
-        }
-      }
-      ctx.putImageData(imgData,0,0);
-      originalImageData = imgData;
-      usingML = true;
-      alert('ML segmentation applied. Click "Apply Background" to composite with chosen background.');
-    }catch(e){
-      console.error(e);
-      alert('ML segmentation failed. Try chroma key or use a simpler image.');
-    } finally {
-      mlBtn.textContent = 'Use ML Mask (BodyPix)';
+  // Basic safeguard: beforeunload warn if unsaved invoice
+  window.addEventListener('beforeunload', (e)=>{
+    // check if items exist
+    if(items.length > 0){
+      e.preventDefault();
+      e.returnValue = '';
     }
   });
-
-  // helper: box blur on mask (in place)
-  function boxBlurMask(mask, w, h, radius){
-    if(radius < 1) return;
-    const tmp = new Uint32Array(w*h);
-    // horizontal pass
-    const r = radius;
-    for(let y=0;y<h;y++){
-      let sum = 0;
-      for(let x=0;x<w;x++){
-        const i = y*w + x;
-        sum += mask[i];
-        if(x > r) sum -= mask[y*w + (x - r - 1)];
-        tmp[i] = sum;
-      }
-      // normalize
-      for(let x=0;x<w;x++){
-        const left = Math.max(0, x - r);
-        const right = Math.min(w-1, x + r);
-        const count = right - left + 1;
-        mask[y*w + x] = Math.round(tmp[y*w + x] / count);
-      }
-    }
-    // vertical pass
-    for(let x=0;x<w;x++){
-      let sum = 0;
-      for(let y=0;y<h;y++){
-        const i = y*w + x;
-        sum += mask[i];
-        if(y > r) sum -= mask[(y - r - 1)*w + x];
-        tmp[i] = sum;
-      }
-      for(let y=0;y<h;y++){
-        const top = Math.max(0, y - r);
-        const bottom = Math.min(h-1, y + r);
-        const count = bottom - top + 1;
-        mask[y*w + x] = Math.round(tmp[y*w + x] / count);
-      }
-    }
-  }
-
-  // small util: rgb <-> hex
-  function componentToHex(c){ const s = c.toString(16); return s.length==1 ? '0'+s : s; }
-  function rgbToHex(r,g,b){ return '#'+componentToHex(r)+componentToHex(g)+componentToHex(b); }
-  function hexToRgb(hex){
-    if(hex.charAt(0)==='#') hex = hex.slice(1);
-    if(hex.length===3) hex = hex.split('').map(c=>c+c).join('');
-    return { r: parseInt(hex.substr(0,2),16), g: parseInt(hex.substr(2,2),16), b: parseInt(hex.substr(4,2),16) };
-  }
-
-  // small helper to show errors if getImageData blocked etc
-  window.addEventListener('resize', ()=> { if(!imgLoaded) return; resizeCanvas(); });
-
-  // UX: clear button
-  document.getElementById('clear').addEventListener('click', ()=> {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    canvas.width = canvas.height = 0;
-    canvasWrap.style.display = 'none';
-    imgLoaded = false;
-    originalImageData = null;
-    pickedHex.value = '';
-    pickedColor = null;
-  });
-
-  // last: clicking Apply Background performs composition
-  applyBtn.addEventListener('click', applyBackground);
-
-  // utils: helpful fallback messages printed to console
-  console.log('Background Remove tool loaded. No server. For ML segmentation BodyPix is loaded only on demand.');
-
 </script>
 </body>
 </html>
