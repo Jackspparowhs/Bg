@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Invoice & ID Maker — PirateRuler</title>
-<meta name="description" content="Invoice & ID maker — client-side, private. Create invoices, design ID cards, export PNG/PDF — no uploads." />
+<meta name="description" content="Invoice builder and ID card designer — client-side. Create invoices, design IDs, download or print — no uploads." />
 <meta name="theme-color" content="#f7fbff" />
 <link rel="icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect rx="14" width="64" height="64" fill="%236b7dff"/><text x="50%" y="50%" font-family="Inter,Arial,sans-serif" font-weight="800" font-size="26" text-anchor="middle" alignment-baseline="central" fill="white">PR</text></svg>'>
 <style>
@@ -20,543 +20,680 @@
   html.sunset{ --bg:#fff6f8; --card:#fff; --muted:#7a6b77; --text:#2a1020; --accent-start:#ff7aa2; --accent-end:#ffb86b; }
 
   *{box-sizing:border-box}
-  body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;color:var(--text);background:linear-gradient(180deg,var(--bg),#e9f6ff);-webkit-font-smoothing:antialiased}
-  a{color:inherit}
-  .wrap{max-width:1100px;margin:12px auto;padding:16px}
+  body{
+    margin:0; font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+    background: linear-gradient(180deg,var(--bg), #e9f6ff);
+    color:var(--text); -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none} /* no underlines everywhere */
+  .container{max-width:1280px;margin:14px auto;padding:18px;}
 
-  /* header */
-  .header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border-radius:14px;background:linear-gradient(90deg, rgba(107,125,255,0.06), rgba(11,179,255,0.02));box-shadow:var(--shadow-sm)}
+  /* Header */
+  header.header{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:14px; border-radius:14px;
+    background:linear-gradient(90deg, rgba(107,125,255,0.06), rgba(11,179,255,0.02));
+    box-shadow:var(--shadow-sm);
+  }
   .brand{display:flex;align-items:center;gap:12px;min-width:0}
-  .logo{width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,var(--accent-start),var(--accent-end));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:18px;flex-shrink:0;box-shadow:0 10px 26px rgba(11,107,255,0.10)}
+  .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent-start),var(--accent-end));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:20px;flex-shrink:0}
   .brand-text{min-width:0}
   .title-strong{font-weight:900;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .by{font-size:12px;color:var(--muted)}
+  .by{font-size:12px;color:var(--muted);margin-top:2px}
 
-  /* controls */
-  .controls{display:flex;gap:10px;align-items:center}
-  .btn{padding:9px 12px;border-radius:999px;border:none;cursor:pointer;font-weight:800;background:transparent}
+  .header-actions{display:flex;gap:10px;align-items:center}
+  .btn{padding:9px 12px;border-radius:10px;border:none;cursor:pointer;font-weight:800;background:transparent}
   .btn.ghost{background:transparent;border:1px solid rgba(0,0,0,0.06);color:var(--text)}
-  .btn.theme{background:linear-gradient(90deg,var(--accent-start),var(--accent-end));color:white;padding:10px 16px;border-radius:999px;font-weight:900;box-shadow:0 10px 30px rgba(75,120,255,0.14)}
+  .btn.theme{background:linear-gradient(90deg,var(--accent-start),var(--accent-end));color:white;border-radius:999px;padding:10px 16px}
 
-  main{display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start;margin-top:18px;min-height:calc(100vh - 220px)}
-  @media(max-width:980px){ main{grid-template-columns:1fr} .sidebar{width:94vw} }
+  .hamb{width:46px;height:46px;border-radius:10px;background:var(--glass);display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid rgba(0,0,0,0.04)}
+
+  /* Tabs / hero */
+  .hero{margin-top:18px;padding:20px;border-radius:16px;background:linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.96));box-shadow:var(--shadow-lg)}
+  .hero .big{font-size:28px;font-weight:900;margin:0}
+  .hero .small{color:var(--muted);margin-top:8px}
+  .tabs{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .tab{padding:10px 16px;border-radius:999px;background:transparent;border:1px solid rgba(11,17,28,0.06);cursor:pointer;color:var(--muted);font-weight:700}
+  .tab.active{background:linear-gradient(90deg,var(--accent-start),var(--accent-end));color:white;box-shadow:0 10px 30px rgba(11,107,255,0.12);transform:translateY(-4px)}
+
+  /* main grid */
+  .grid{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-top:12px;align-items:start}
+  @media(max-width:980px){ .grid{grid-template-columns:1fr} }
 
   .card{background:var(--card);border-radius:14px;padding:18px;box-shadow:var(--shadow-sm);border:1px solid rgba(0,0,0,0.04)}
-  h2{margin:0 0 8px 0;font-size:18px}
-  .muted{color:var(--muted);font-size:13px}
-
-  .input{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(10,20,40,0.06);margin-top:8px}
+  .hint{color:var(--muted);font-size:13px;margin-bottom:10px}
+  input[type="text"], input[type="number"], input[type="date"], select, textarea { width:100%; padding:12px;border-radius:10px;border:1px solid rgba(10,20,40,0.06); font-size:15px; background:transparent; color:var(--text); resize:vertical }
   .row{display:flex;gap:10px}
-  .half{flex:1}
-  .btn.primary{background:linear-gradient(90deg,var(--accent-start),var(--accent-end));color:white;padding:10px 14px;border-radius:999px;border:none;font-weight:800;cursor:pointer}
-  .btn.small{padding:8px 12px;border-radius:999px}
+  .primary{background:linear-gradient(90deg,var(--accent-start),var(--accent-end));color:white;padding:9px 14px;border-radius:10px;border:none;font-weight:800;cursor:pointer}
+  .ghost{background:transparent;border:1px solid rgba(0,0,0,0.06);padding:9px 12px;border-radius:10px;cursor:pointer}
 
   /* invoice table */
   .table{width:100%;border-collapse:collapse;margin-top:12px}
-  .table thead th{padding:10px;text-align:left;color:var(--muted);font-weight:800;border-bottom:1px solid rgba(0,0,0,0.06)}
-  .table tbody td{padding:10px;border-bottom:1px solid rgba(0,0,0,0.04)}
-  .totals{margin-top:18px;text-align:right;font-weight:900}
+  .table th, .table td{padding:10px;text-align:left;border-bottom:1px solid rgba(0,0,0,0.06)}
+  .table th{font-weight:800;color:var(--muted)}
+  .summary{margin-top:18px;text-align:right;font-weight:900}
 
-  /* ID canvas */
-  #idCanvas{width:100%;height:auto;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.98),rgba(255,255,255,0.96));border:1px solid rgba(0,0,0,0.04)}
+  /* right panel */
+  aside{align-self:start}
+  .feature-panel{background:var(--card);border:1px solid rgba(0,0,0,0.06);border-radius:14px;box-shadow:var(--shadow-sm);padding:12px}
+  @media(min-width:981px){ .feature-panel{position:sticky;top:18px;max-height:calc(100vh - 36px);overflow:auto} }
 
-  /* sidebar */
-  aside.right{align-self:start}
-  .panel{padding:14px;border-radius:12px;background:var(--card);box-shadow:var(--shadow-sm);border:1px solid rgba(0,0,0,0.04)}
-  .sidebar{position:fixed;top:0;right:0;height:100vh;width:360px;transform:translateX(120%);background:var(--card);box-shadow:-40px 0 80px rgba(2,8,20,0.25);padding:20px;border-left:1px solid rgba(0,0,0,0.04);border-radius:0 0 0 14px;z-index:90;overflow:auto}
-  .sidebar.open{transform:translateX(0);transition:transform .28s cubic-bezier(.2,.9,.3,1)}
+  .feature{display:flex;gap:12px;align-items:center;padding:12px;border-radius:12px;background:var(--card);border:1px solid rgba(0,0,0,0.06);box-shadow:var(--shadow-sm);min-height:90px}
+  .f-icon{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--accent-start),var(--accent-end));flex-shrink:0}
+  .f-title{font-weight:800}
+  .f-desc{color:var(--muted);font-size:13px}
 
-  /* footer like calculator site */
-  footer.siteFooter{margin-top:18px;padding:18px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.94),rgba(255,255,255,0.98));box-shadow:var(--shadow-lg);text-align:center}
-  .visit{padding:12px 20px;border-radius:999px;display:inline-block;background:linear-gradient(90deg,#ff7aa2 0%, #6b7dff 100%);color:white;font-weight:800;text-decoration:none}
+  /* sidebar specifics */
+  .sidebar{position:fixed;top:0;right:0;height:100vh;width:360px;max-width:94vw;transform:translateX(120%);transition:transform .28s cubic-bezier(.2,.9,.3,1);z-index:90;background:var(--card);box-shadow:-40px 0 80px rgba(2,8,20,0.25);padding:20px;border-left:1px solid rgba(0,0,0,0.04);overflow:auto;border-radius:0 0 0 14px}
+  .sidebar.open{transform:translateX(0)}
+  .nav-list{margin-top:10px;display:flex;flex-direction:column;gap:12px}
+  .nav-list a{display:block;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(0,0,0,0.01), rgba(0,0,0,0.02));color:var(--text);font-weight:600;text-decoration:none}
+  .backup{margin-top:18px;color:var(--muted);font-size:13px}
 
-  /* helper small */
-  .muted-small{color:var(--muted);font-size:13px;margin-top:8px}
-  @media(max-width:680px){ .title-strong{font-size:16px} .logo{width:46px;height:46px;font-size:16px} main{grid-template-columns:1fr} }
+  /* footer */
+  footer{margin-top:18px;padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.96));text-align:center;box-shadow:var(--shadow-lg)}
+  footer .visit{padding:10px 18px;border-radius:999px;background:linear-gradient(90deg,#ff7aa2 0%, #6b7dff 100%);color:#fff;font-weight:800;text-decoration:none;display:inline-block}
+
+  /* small helpers */
+  .muted{color:var(--muted)}
+  .sm{font-size:13px;color:var(--muted)}
+  .hidden{display:none}
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <header class="header">
-      <div class="brand">
-        <a href="/" aria-label="Home" style="display:flex;align-items:center;gap:12px">
-          <div class="logo" id="logo">PR</div>
-          <div class="brand-text">
-            <div class="title-strong" id="brandTitle">Invoice & ID Maker</div>
-            <div class="by">by PirateRuler.com</div>
-          </div>
-        </a>
+<div class="container">
+
+  <!-- Header -->
+  <header class="header" role="banner">
+    <div class="brand">
+      <a href="/" aria-label="Home" style="display:flex;align-items:center;gap:12px">
+        <div class="logo" aria-hidden="true">PR</div>
+        <div class="brand-text">
+          <div class="title-strong">Invoice & ID Maker</div>
+          <div class="by">by PirateRuler.com</div>
+        </div>
+      </a>
+    </div>
+
+    <div class="header-actions" role="navigation">
+      <div class="theme-select" id="themeSelectWrap">
+        <button id="themeBtn" class="btn theme" title="Theme">Light ▾</button>
+        <div id="themeList" class="theme-list" aria-hidden="true" style="display:none;position:absolute;right:18px;top:72px;background:var(--card);border-radius:10px;padding:8px;box-shadow:var(--shadow-sm);z-index:1000;">
+          <div class="theme-item" data-theme="light" style="padding:8px;cursor:pointer">Light</div>
+          <div class="theme-item" data-theme="dark" style="padding:8px;cursor:pointer">Dark</div>
+          <div class="theme-item" data-theme="ocean" style="padding:8px;cursor:pointer">Ocean</div>
+          <div class="theme-item" data-theme="sunset" style="padding:8px;cursor:pointer">Sunset</div>
+        </div>
       </div>
 
-      <div class="controls">
-        <button id="themeBtn" class="btn theme">Ocean ▾</button>
-        <button id="openSidebarBtn" class="btn ghost">☰</button>
-      </div>
-    </header>
+      <div id="hambBtn" class="hamb" title="Open menu" aria-haspopup="true" aria-controls="sidebar">☰</div>
+    </div>
+  </header>
 
-    <main>
-      <!-- LEFT -->
-      <div>
-        <!-- INVOICE -->
-        <section class="card" id="invoiceCard">
-          <h2>Invoice Builder</h2>
-          <div class="muted">Create invoices quickly — add items, set tax & discount, then print or export. Everything runs in your browser (no uploads).</div>
+  <!-- HERO + Tabs -->
+  <section class="hero" aria-labelledby="heroTitle">
+    <h1 id="heroTitle" class="big">Invoice Builder & ID Designer</h1>
+    <p class="small">Create invoices and ID cards entirely client-side. Upload photos from your phone and print or download — no uploads.</p>
 
-          <!-- company block -->
-          <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
-            <input id="companyName" class="input half" placeholder="Company name (leave blank to omit)" />
-            <input id="companyAddress" class="input half" placeholder="Company address (optional)" />
-          </div>
+    <div class="tabs" role="tablist" aria-label="Tools">
+      <button class="tab active" data-target="invoice" role="tab" id="tab-invoice">Invoice Builder</button>
+      <button class="tab" data-target="idcard" role="tab" id="tab-id">ID Card Designer</button>
+    </div>
+  </section>
 
-          <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
-            <input id="invNumber" class="input half" placeholder="Invoice # (optional)" />
-            <input id="invDate" type="date" class="input half" />
-          </div>
+  <!-- Main Grid -->
+  <main class="grid" role="main">
+    <div>
+      <!-- INVOICE -->
+      <section id="invoice" class="card" aria-labelledby="invTitle">
+        <h2 id="invTitle">Invoice Builder</h2>
+        <p class="hint">Create invoices quickly — add items, set tax & discount, print or export. Everything runs in your browser (no uploads).</p>
 
-          <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
-            <input id="invCustomer" class="input half" placeholder="Customer name (optional)" />
-            <select id="invStatus" class="input half" style="padding:12px;border-radius:10px">
-              <option value="">Status (optional)</option>
-              <option>Unpaid</option>
-              <option>Paid</option>
-              <option>Pending</option>
-            </select>
-          </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <input id="companyName" type="text" placeholder="Company name (leave blank to hide on print)" />
+          <input id="companyAddr" type="text" placeholder="Company address (optional)" />
+          <input id="invoiceNo" type="text" placeholder="Invoice # (optional)" />
+          <input id="invoiceDate" type="date" value="" />
+          <input id="customerName" type="text" placeholder="Customer name (optional)" />
+          <select id="status"><option>Unpaid</option><option>Paid</option><option>Draft</option></select>
+          <textarea id="note" placeholder="Note / memo (optional)" style="grid-column:1/3"></textarea>
+        </div>
 
-          <div style="margin-top:12px">
-            <textarea id="invNote" class="input" placeholder="Note / memo (optional)" style="min-height:48px"></textarea>
-          </div>
+        <table class="table" aria-label="Invoice items" style="margin-top:18px">
+          <thead>
+            <tr><th>Description</th><th style="width:80px">Qty</th><th style="width:120px">Unit</th><th style="width:90px">Tax %</th><th style="width:120px">Line total</th></tr>
+          </thead>
+          <tbody id="itemsBody">
+            <tr>
+              <td><input class="it-desc" type="text" placeholder="Item description" /></td>
+              <td><input class="it-qty" type="number" value="1" min="0" /></td>
+              <td><input class="it-unit" type="number" value="0" step="0.01" /></td>
+              <td><input class="it-tax" type="number" value="0" /></td>
+              <td class="it-total">0.00</td>
+            </tr>
+          </tbody>
+        </table>
 
-          <!-- items -->
-          <table class="table" aria-label="Invoice items">
-            <thead>
-              <tr><th style="width:46%">Description</th><th style="width:12%">Qty</th><th style="width:14%">Unit</th><th style="width:12%">Tax %</th><th style="width:16%">Line total</th></tr>
-            </thead>
-            <tbody id="itemsBody"></tbody>
-          </table>
+        <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">
+          <button id="addItem" class="primary">Add Item</button>
+          <button id="clearItems" class="ghost">Clear Items</button>
+          <div style="flex:1"></div>
+        </div>
 
-          <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
-            <button id="addItem" class="btn primary">Add Item</button>
-            <button id="clearItems" class="btn ghost">Clear Items</button>
-          </div>
+        <div style="margin-top:12px">
+          <label class="sm">Discount (%)</label>
+          <input id="globalDiscount" type="number" placeholder="0" value="0" />
+          <label class="sm" style="margin-top:8px">Global Tax (%)</label>
+          <input id="globalTax" type="number" placeholder="0" value="0" />
+        </div>
 
-          <div style="margin-top:12px">
-            <label class="muted">Discount (%)</label>
-            <input id="globalDiscount" class="input" placeholder="0" value="0" />
-            <label class="muted" style="margin-top:8px;display:block">Global Tax (%)</label>
-            <input id="globalTax" class="input" placeholder="0" value="0" />
-          </div>
+        <div class="summary" aria-live="polite" style="margin-top:18px">
+          <div>Subtotal: <span id="subTotal">0.00</span></div>
+          <div>Tax: <span id="taxTotal">0.00</span></div>
+          <div>Discount: <span id="discTotal">0.00</span></div>
+          <div style="font-size:20px;margin-top:6px">Total: <span id="finalTotal">0.00</span></div>
+        </div>
 
-          <div class="totals" aria-live="polite" id="totals">
-            <div>Subtotal: <span id="subtotal">0.00</span></div>
-            <div>Tax: <span id="taxTotal">0.00</span></div>
-            <div>Discount: <span id="discountTotal">0.00</span></div>
-            <div style="font-size:20px;margin-top:6px">Total: <span id="grandTotal">0.00</span></div>
-          </div>
+        <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+          <button id="printInvoice" class="primary">Print Invoice</button>
+          <button id="exportInvoiceJSON" class="ghost">Export JSON</button>
+          <button id="saveLocally" class="ghost">Save Locally</button>
+          <button id="loadLast" class="ghost">Load Last</button>
+          <button id="resetInvoice" class="ghost">Reset</button>
+        </div>
+      </section>
 
-          <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
-            <button id="printInvoice" class="btn primary">Print Invoice</button>
-            <button id="exportInvoice" class="btn ghost">Export JSON</button>
-            <button id="saveInvoice" class="btn ghost">Save Locally</button>
-            <button id="loadInvoice" class="btn ghost">Load Last</button>
-            <button id="resetInvoice" class="btn ghost">Reset</button>
-          </div>
-        </section>
+      <!-- ID CARD -->
+      <section id="idcard" class="card hidden" aria-labelledby="idTitle">
+        <h2 id="idTitle">ID Card Designer</h2>
+        <p class="hint">Design a simple ID and download a PNG. Upload a photo from your phone and position it.</p>
 
-        <!-- ID Designer -->
-        <section class="card" style="margin-top:18px">
-          <h2>ID Card Designer</h2>
-          <div class="muted">Design a simple ID card and download as PNG. Upload a photo from your phone and position it.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <input id="idName" type="text" placeholder="Full name" />
+          <input id="idRole" type="text" placeholder="Role / Title" />
+          <input id="idCompany" type="text" placeholder="Company / Org" />
+          <input id="idPhone" type="text" placeholder="Phone (optional)" />
+          <input id="idEmail" type="text" placeholder="Email (optional)" />
+          <input id="idDob" type="date" placeholder="DOB (optional)" />
+          <textarea id="idAddress" placeholder="Address (optional)" style="grid-column:1/3"></textarea>
+        </div>
 
-          <input id="idName" class="input" placeholder="Full name" />
-          <input id="idRole" class="input" placeholder="Role / Title" style="margin-top:8px" />
-          <input id="idCompany" class="input" placeholder="Company / Org" style="margin-top:8px" />
-
-          <div style="margin-top:8px">
-            <label class="muted">Background color</label>
-            <input id="idBgColor" type="color" value="#ffffff" style="width:72px;height:40px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);margin-top:8px" />
-          </div>
-
-          <div style="display:flex;gap:10px;align-items:center;margin-top:12px">
-            <label for="idPhotoInput" class="btn primary" style="cursor:pointer">Choose Photo</label>
-            <input id="idPhotoInput" type="file" accept="image/*;capture=camera" style="display:none" />
-            <button id="idClearPhoto" class="btn ghost">Clear Photo</button>
-          </div>
-          <div class="muted-small">Tip: use a square headshot for best results. On iOS, if pixel reading fails open the photo in Photos → Edit → Done then re-upload.</div>
-
-          <div style="margin-top:12px" class="card">
-            <canvas id="idCanvas" width="1200" height="760" aria-label="ID preview"></canvas>
-          </div>
-
-          <div style="display:flex;gap:10px;margin-top:12px">
-            <button id="downloadId" class="btn primary">Download ID PNG</button>
-            <button id="saveId" class="btn ghost">Save ID</button>
-            <button id="loadId" class="btn ghost">Load ID</button>
-          </div>
-        </section>
-      </div>
-
-      <!-- RIGHT -->
-      <aside class="right">
-        <div class="panel">
-          <h3>PirateRuler Tools</h3>
-          <p class="muted">Private, client-side utilities — no uploads. Save locally or print directly.</p>
-
-          <div style="margin-top:12px">
-            <div class="card" style="padding:12px;margin-bottom:10px">
-              <strong>Fast & Local</strong>
-              <div class="muted-small">Everything runs in your browser for privacy and speed.</div>
-            </div>
-            <div class="card" style="padding:12px">
-              <strong>Mobile-friendly</strong>
-              <div class="muted-small">Upload screenshots and photos from your phone camera roll.</div>
-            </div>
-          </div>
-
-          <div style="margin-top:12px;text-align:center">
-            <a class="visit" href="https://pirateruler.com" target="_blank" rel="noopener">Visit PirateRuler.com</a>
+        <div style="margin-top:12px">
+          <label class="sm">Photo</label>
+          <input id="idPhotoInput" type="file" accept="image/*" />
+          <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+            <button id="clearPhoto" class="ghost">Clear Photo</button>
+            <div class="sm" id="photoInfo"></div>
           </div>
         </div>
-      </aside>
-    </main>
 
-    <!-- Sidebar -->
-    <aside id="sidebar" class="sidebar" aria-hidden="true">
-      <div style="display:flex;justify-content:flex-end"><button id="closeSidebar" class="btn ghost">Close</button></div>
-      <h3>PirateRuler Links</h3>
-      <p class="muted">Quick links & backup resources</p>
-      <nav style="display:flex;flex-direction:column;gap:12px;margin-top:10px">
-        <a href="https://www.pirateruler.com/post/about.html" target="_blank" rel="noopener noreferrer">About — PirateRuler</a>
-        <a href="https://www.pirateruler.com/post/privacy.html" target="_blank" rel="noopener noreferrer">Privacy</a>
-        <a href="https://www.pirateruler.com/post/contact.html" target="_blank" rel="noopener noreferrer">Contact</a>
-        <a href="https://www.pirateruler.com/post/terms.html" target="_blank" rel="noopener noreferrer">Terms</a>
-      </nav>
-      <div style="margin-top:18px;color:var(--muted);font-size:13px">If this site is offline you can visit PirateRuler for backups:<br><a href="https://pirateruler.com" target="_blank">pirateruler.com</a></div>
+        <div id="idCanvasWrap" style="margin-top:12px;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,#fff,#f8fbff);height:220px;display:flex;align-items:center;justify-content:center">
+          <canvas id="idCanvas" width="600" height="350" style="width:100%;height:auto;max-height:320px"></canvas>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:12px">
+          <button id="downloadId" class="primary">Download ID PNG</button>
+          <button id="saveId" class="ghost">Save ID (local)</button>
+          <button id="loadId" class="ghost">Load ID</button>
+        </div>
+        <div class="sm" style="margin-top:12px">Tip: upload a square headshot for best results. Saved items are stored only in your browser (localStorage).</div>
+      </section>
+    </div>
+
+    <!-- Right panel -->
+    <aside>
+      <div class="feature-panel">
+        <div style="font-weight:900;margin-bottom:10px">PirateRuler Tools</div>
+
+        <div class="feature">
+          <div class="f-icon">⚡</div>
+          <div>
+            <div class="f-title">Fast & Local</div>
+            <div class="f-desc">Everything runs in your browser for speed and privacy.</div>
+          </div>
+        </div>
+
+        <div class="feature" style="margin-top:12px">
+          <div class="f-icon" style="background:linear-gradient(135deg,#8ee36b,#2bbf6f)">📱</div>
+          <div>
+            <div class="f-title">Mobile-friendly</div>
+            <div class="f-desc">Upload screenshots & photos from your phone camera roll.</div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;padding:12px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.96),rgba(255,255,255,0.98));box-shadow:var(--shadow-sm)">
+          <div style="font-weight:800">Quick tips</div>
+          <ul class="sm" style="margin:8px 0 0 18px;padding:0">
+            <li>Use browser Print to save invoices as PDF.</li>
+            <li>iOS photos sometimes need Edit → Done to allow pixel reading — re-save if errors occur.</li>
+            <li>Saved invoices & IDs are stored only in your browser (localStorage).</li>
+          </ul>
+        </div>
+      </div>
     </aside>
+  </main>
 
-    <footer class="siteFooter">
-      <a class="visit" href="https://pirateruler.com" target="_blank" rel="noopener">Visit PirateRuler.com</a>
-      <div style="height:12px"></div>
-      <small class="muted">© <span id="year"></span> PirateRuler — Invoice & ID Maker (client-side)</small>
-    </footer>
-  </div>
+  <!-- Footer -->
+  <footer>
+    <a class="visit" href="https://pirateruler.com" target="_blank" rel="noopener noreferrer">Visit PirateRuler.com</a>
+    <div style="height:12px"></div>
+    <small class="muted">© <span id="year"></span> PirateRuler — Invoice & ID Maker (client-side)</small>
+  </footer>
+
+  <!-- Sidebar (links only, no underlines) -->
+  <aside id="sidebar" class="sidebar" role="dialog" aria-modal="true" aria-hidden="true">
+    <div style="display:flex;justify-content:flex-end"><button id="closeSidebar" class="ghost">Close</button></div>
+    <h3 style="margin-top:6px">Quick links</h3>
+    <p class="muted">Backup & resources</p>
+    <nav class="nav-list" aria-label="PirateRuler quick links">
+      <a href="https://www.pirateruler.com/post/about.html" target="_blank" rel="noopener noreferrer">About — PirateRuler</a>
+      <a href="https://www.pirateruler.com/post/privacy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+      <a href="https://www.pirateruler.com/post/contact.html" target="_blank" rel="noopener noreferrer">Contact</a>
+      <a href="https://www.pirateruler.com/post/terms.html" target="_blank" rel="noopener noreferrer">Terms & Service</a>
+    </nav>
+    <div class="backup">If the site is offline visit PirateRuler for backups:<br><a href="https://pirateruler.com" target="_blank" rel="noopener noreferrer">pirateruler.com</a></div>
+  </aside>
+
+</div>
 
 <script>
+  // small helpers
   const el = id => document.getElementById(id);
-  el('year').textContent = new Date().getFullYear();
+  document.getElementById('year').textContent = new Date().getFullYear();
 
-  /* THEME */
-  const themeBtn = el('themeBtn'), root = document.documentElement;
-  function applyTheme(name){
-    root.classList.remove('dark','ocean','sunset');
-    if(name === 'dark') root.classList.add('dark');
-    else if(name === 'sunset') root.classList.add('sunset');
-    else root.classList.add('ocean');
-    themeBtn.textContent = (name.charAt(0).toUpperCase() + name.slice(1)) + ' ▾';
-    localStorage.setItem('pr-theme', name);
-  }
-  applyTheme(localStorage.getItem('pr-theme') || 'ocean');
-  themeBtn.addEventListener('click', ()=>{
-    const order = ['ocean','light','dark','sunset'];
-    const cur = localStorage.getItem('pr-theme') || 'ocean';
-    const next = order[(order.indexOf(cur) + 1) % order.length];
-    applyTheme(next);
+  // Theme selector
+  const root = document.documentElement;
+  const themeBtn = el('themeBtn');
+  const themeList = document.querySelector('.theme-list');
+  (function initTheme(){
+    const saved = localStorage.getItem('pr-theme') || 'light';
+    applyTheme(saved);
+  })();
+  themeBtn.addEventListener('click', e => {
+    const list = document.querySelector('#themeList');
+    list.style.display = list.style.display === 'block' ? 'none' : 'block';
   });
+  document.querySelectorAll('.theme-item').forEach(it => it.addEventListener('click', (e) => {
+    const t = e.currentTarget.dataset.theme;
+    applyTheme(t);
+    document.querySelector('#themeList').style.display = 'none';
+  }));
+  function applyTheme(t){
+    ['dark','ocean','sunset'].forEach(c => root.classList.remove(c));
+    if(t === 'dark') { root.classList.add('dark'); themeBtn.textContent = 'Dark ▾'; localStorage.setItem('pr-theme','dark'); }
+    else if(t === 'ocean') { root.classList.add('ocean'); themeBtn.textContent = 'Ocean ▾'; localStorage.setItem('pr-theme','ocean'); }
+    else if(t === 'sunset') { root.classList.add('sunset'); themeBtn.textContent = 'Sunset ▾'; localStorage.setItem('pr-theme','sunset'); }
+    else { themeBtn.textContent = 'Light ▾'; localStorage.setItem('pr-theme','light'); }
+  }
 
-  /* SIDEBAR */
-  const sidebar = el('sidebar'), openSidebarBtn = el('openSidebarBtn'), closeSidebar = el('closeSidebar');
-  function openSB(){ sidebar.classList.add('open'); sidebar.setAttribute('aria-hidden','false'); }
+  // Sidebar
+  const sidebar = el('sidebar'), hambBtn = el('hambBtn'), closeSidebar = el('closeSidebar');
+  function openSidebar(){ sidebar.classList.add('open'); sidebar.setAttribute('aria-hidden','false'); }
   function closeSB(){ sidebar.classList.remove('open'); sidebar.setAttribute('aria-hidden','true'); }
-  openSidebarBtn.addEventListener('click', openSB);
+  hambBtn.addEventListener('click', openSidebar);
   closeSidebar.addEventListener('click', closeSB);
-  document.addEventListener('keydown', e => { if(e.key === 'Escape') closeSB(); });
-  document.addEventListener('click', (e) => { if(!sidebar.classList.contains('open')) return; if(!sidebar.contains(e.target) && !openSidebarBtn.contains(e.target)) closeSB(); });
+  document.addEventListener('click', (e)=> {
+    if (!sidebar.classList.contains('open')) return;
+    if (!sidebar.contains(e.target) && !hambBtn.contains(e.target)) closeSB();
+  });
 
-  /* ======= INVOICE LOGIC (items, totals, save/load/print) ======= */
+  // Tabs (start at invoice)
+  const tabs = Array.from(document.querySelectorAll('.tab'));
+  function showTab(id){
+    document.querySelectorAll('main section.card').forEach(s => s.classList.add('hidden'));
+    const elTab = document.getElementById(id);
+    if(elTab) elTab.classList.remove('hidden');
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.target === id));
+    // short scroll to top of section
+    setTimeout(()=> {
+      const rect = elTab.getBoundingClientRect();
+      if(rect) window.scrollTo({top: window.scrollY + rect.top - 70, behavior:'smooth'});
+    }, 70);
+  }
+  tabs.forEach(t => t.addEventListener('click', ()=> showTab(t.dataset.target)));
+  showTab('invoice');
+
+  /* =========================
+     Invoice logic (simple)
+     ========================= */
   const itemsBody = el('itemsBody');
-  const addItemBtn = el('addItem'), clearItemsBtn = el('clearItems');
-  const subtotalEl = el('subtotal'), taxEl = el('taxTotal'), discEl = el('discountTotal'), grandEl = el('grandTotal');
-  const globalTax = el('globalTax'), globalDiscount = el('globalDiscount');
+  const addItemBtn = el('addItem');
+  const clearItemsBtn = el('clearItems');
+  const globalTax = el('globalTax');
+  const globalDiscount = el('globalDiscount');
+  const subTotalEl = el('subTotal');
+  const taxTotalEl = el('taxTotal');
+  const discTotalEl = el('discTotal');
+  const finalTotalEl = el('finalTotal');
 
-  // default date = today
-  const invDate = el('invDate');
-  if(!invDate.value){
-    const today = new Date(); invDate.value = today.toISOString().slice(0,10);
+  function recalcInvoice(){
+    const rows = Array.from(itemsBody.querySelectorAll('tr'));
+    let subtotal = 0, taxTotal = 0;
+    rows.forEach(r => {
+      const qty = parseFloat(r.querySelector('.it-qty').value || 0);
+      const unit = parseFloat(r.querySelector('.it-unit').value || 0);
+      const tax = parseFloat(r.querySelector('.it-tax').value || 0);
+      const line = qty * unit;
+      const lineTax = line * (tax/100);
+      subtotal += line;
+      taxTotal += lineTax;
+      r.querySelector('.it-total').textContent = (line + lineTax).toFixed(2);
+    });
+    // apply global tax and discount
+    const gTaxPct = parseFloat(globalTax.value || 0);
+    const gDiscPct = parseFloat(globalDiscount.value || 0);
+    const gTax = subtotal * (gTaxPct/100);
+    const gDisc = subtotal * (gDiscPct/100);
+    const totalTax = taxTotal + gTax;
+    const total = Math.max(0, subtotal + totalTax - gDisc);
+    subTotalEl.textContent = subtotal.toFixed(2);
+    taxTotalEl.textContent = totalTax.toFixed(2);
+    discTotalEl.textContent = gDisc.toFixed(2);
+    finalTotalEl.textContent = total.toFixed(2);
   }
 
-  let items = [];
-  function renderItems(){
+  addItemBtn.addEventListener('click', ()=> {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input class="it-desc" type="text" placeholder="Item description" /></td>
+      <td><input class="it-qty" type="number" value="1" min="0" /></td>
+      <td><input class="it-unit" type="number" value="0" step="0.01" /></td>
+      <td><input class="it-tax" type="number" value="0" /></td>
+      <td class="it-total">0.00</td>
+    `;
+    itemsBody.appendChild(tr);
+    hookupRow(tr);
+    recalcInvoice();
+  });
+
+  function hookupRow(tr){
+    ['it-qty','it-unit','it-tax'].forEach(cls => {
+      const input = tr.querySelector('.' + cls);
+      if(input) input.addEventListener('input', recalcInvoice);
+    });
+  }
+
+  // hookup initial rows
+  Array.from(itemsBody.querySelectorAll('tr')).forEach(hookupRow);
+  clearItemsBtn.addEventListener('click', ()=> {
     itemsBody.innerHTML = '';
-    if(items.length === 0){
-      // one empty row to encourage input
-      items.push({desc:'', qty:1, unit:0, taxPct:0});
-    }
-    items.forEach((it, idx) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><input class="input" data-idx="${idx}" data-field="desc" value="${it.desc||''}" style="width:100%"></td>
-        <td><input class="input" data-idx="${idx}" data-field="qty" type="number" min="0" value="${it.qty||0}" style="width:100%"></td>
-        <td><input class="input" data-idx="${idx}" data-field="unit" type="number" min="0" value="${it.unit||0}" style="width:100%"></td>
-        <td><input class="input" data-idx="${idx}" data-field="taxPct" type="number" min="0" value="${it.taxPct||0}" style="width:100%"></td>
-        <td id="line-${idx}">${lineTotal(it).toFixed(2)}</td>
-      `;
-      itemsBody.appendChild(tr);
-    });
-
-    itemsBody.querySelectorAll('input').forEach(inp=>{
-      inp.addEventListener('input', e => {
-        const idx = Number(e.target.dataset.idx);
-        const f = e.target.dataset.field;
-        let v = e.target.value;
-        if(f === 'qty' || f === 'unit' || f === 'taxPct') v = parseFloat(v) || 0;
-        items[idx][f] = v;
-        el(`line-${idx}`).textContent = lineTotal(items[idx]).toFixed(2);
-        computeTotals();
-      });
-    });
-
-    computeTotals();
-  }
-
-  function lineTotal(it){
-    const q = Number(it.qty || 0), u = Number(it.unit || 0), t = Number(it.taxPct || 0);
-    const base = q * u; const tax = base * (t/100); return base + tax;
-  }
-
-  function computeTotals(){
-    const sub = items.reduce((s,it) => s + (Number(it.qty||0)*Number(it.unit||0)), 0);
-    const tax = items.reduce((s,it) => s + (Number(it.qty||0)*Number(it.unit||0))*(Number(it.taxPct||0)/100), 0);
-    const discountPct = Number(globalDiscount.value || 0);
-    const discount = Math.max(0, (sub + tax) * (discountPct/100));
-    const globalTaxPct = Number(globalTax.value || 0);
-    const extraTax = (sub - (sub*(discountPct/100))) * (globalTaxPct/100);
-    const total = sub + tax + extraTax - discount;
-    subtotalEl.textContent = sub.toFixed(2);
-    taxEl.textContent = (tax + extraTax).toFixed(2);
-    discEl.textContent = discount.toFixed(2);
-    grandEl.textContent = total.toFixed(2);
-  }
-
-  addItemBtn.addEventListener('click', ()=> { items.push({desc:'', qty:1, unit:0, taxPct:0}); renderItems(); });
-  clearItemsBtn.addEventListener('click', ()=> { items = []; renderItems(); });
-
-  globalTax.addEventListener('input', computeTotals);
-  globalDiscount.addEventListener('input', computeTotals);
-
-  // save/load/export
-  el('exportInvoice').addEventListener('click', ()=>{
-    const payload = {
-      meta: {
-        company: el('companyName').value || '',
-        address: el('companyAddress').value || '',
-        customer: el('invCustomer').value || '',
-        invoice: el('invNumber').value || '',
-        date: el('invDate').value || '',
-        status: el('invStatus').value || '',
-        note: el('invNote').value || ''
-      },
-      items, globalTax: globalTax.value, globalDiscount: globalDiscount.value, totals: { subtotal: subtotalEl.textContent, tax: taxEl.textContent, discount: discEl.textContent, total: grandEl.textContent }
-    };
-    const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
-    const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'invoice.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    addItemBtn.click();
+    recalcInvoice();
   });
 
-  el('saveInvoice').addEventListener('click', ()=>{
-    const save = {
-      meta:{company:el('companyName').value, address:el('companyAddress').value, customer:el('invCustomer').value, invoice:el('invNumber').value, date:el('invDate').value, status:el('invStatus').value, note:el('invNote').value},
-      items, globalTax:globalTax.value, globalDiscount:globalDiscount.value
-    };
-    localStorage.setItem('pr-invoice-last', JSON.stringify(save));
-    alert('Invoice saved locally.');
-  });
+  [globalTax, globalDiscount].forEach(inp => inp.addEventListener('input', recalcInvoice));
 
-  el('loadInvoice').addEventListener('click', ()=>{
-    const s = localStorage.getItem('pr-invoice-last'); if(!s) return alert('No saved invoice found.');
+  // export / save invoice
+  el('exportInvoiceJSON').addEventListener('click', ()=>{
+    const invoice = gatherInvoice();
+    const blob = new Blob([JSON.stringify(invoice, null, 2)], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'invoice.json'; a.click(); URL.revokeObjectURL(a.href);
+  });
+  el('saveLocally').addEventListener('click', ()=>{
+    localStorage.setItem('pr-last-invoice', JSON.stringify(gatherInvoice()));
+    alert('Invoice saved locally in your browser.');
+  });
+  el('loadLast').addEventListener('click', ()=>{
+    const s = localStorage.getItem('pr-last-invoice');
+    if(!s) return alert('No saved invoice found.');
     try{
-      const p = JSON.parse(s);
-      el('companyName').value = p.meta.company || '';
-      el('companyAddress').value = p.meta.address || '';
-      el('invCustomer').value = p.meta.customer || '';
-      el('invNumber').value = p.meta.invoice || '';
-      el('invDate').value = p.meta.date || '';
-      el('invStatus').value = p.meta.status || '';
-      el('invNote').value = p.meta.note || '';
-      items = p.items || []; globalTax.value = p.globalTax || 0; globalDiscount.value = p.globalDiscount || 0; renderItems();
-    }catch(e){ alert('Failed to load saved invoice.'); }
+      const inv = JSON.parse(s);
+      populateInvoice(inv);
+      recalcInvoice();
+      alert('Loaded last invoice.');
+    }catch(e){ alert('Failed to load invoice.'); }
   });
-
-  el('resetInvoice').addEventListener('click', ()=>{
+  el('resetInvoice').addEventListener('click', ()=> {
     if(!confirm('Reset invoice?')) return;
-    el('companyName').value = ''; el('companyAddress').value = ''; el('invCustomer').value = ''; el('invNumber').value = ''; el('invNote').value = ''; el('invStatus').value = '';
-    items = []; globalTax.value = 0; globalDiscount.value = 0; renderItems();
+    el('companyName').value=''; el('companyAddr').value=''; el('invoiceNo').value=''; el('invoiceDate').value=''; el('customerName').value=''; el('note').value='';
+    itemsBody.innerHTML = '';
+    addItemBtn.click();
+    globalTax.value = '0'; globalDiscount.value = '0';
+    recalcInvoice();
   });
 
-  /* PRINT: realistic invoice layout */
-  el('printInvoice').addEventListener('click', ()=>{
-    if(!items || items.length === 0) return alert('Add at least one item.');
-    // build printable HTML
-    const meta = {
-      company: el('companyName').value,
-      address: el('companyAddress').value,
-      invoice: el('invNumber').value,
-      date: el('invDate').value,
-      status: el('invStatus').value,
-      customer: el('invCustomer').value,
-      note: el('invNote').value
+  function gatherInvoice(){
+    const rows = Array.from(itemsBody.querySelectorAll('tr')).map(r => ({
+      description: r.querySelector('.it-desc').value,
+      qty: parseFloat(r.querySelector('.it-qty').value || 0),
+      unit: parseFloat(r.querySelector('.it-unit').value || 0),
+      tax: parseFloat(r.querySelector('.it-tax').value || 0),
+      lineTotal: parseFloat(r.querySelector('.it-total').textContent || 0)
+    }));
+    return {
+      companyName: el('companyName').value,
+      companyAddr: el('companyAddr').value,
+      invoiceNo: el('invoiceNo').value,
+      invoiceDate: el('invoiceDate').value,
+      customerName: el('customerName').value,
+      status: el('status').value,
+      note: el('note').value,
+      items: rows,
+      globalTax: parseFloat(globalTax.value || 0),
+      globalDiscount: parseFloat(globalDiscount.value || 0),
+      totals: {subtotal: parseFloat(subTotalEl.textContent||0), tax: parseFloat(taxTotalEl.textContent||0), discount: parseFloat(discTotalEl.textContent||0), total: parseFloat(finalTotalEl.textContent||0)}
     };
-    const totals = { subtotal: subtotalEl.textContent, tax: taxEl.textContent, discount: discEl.textContent, total: grandEl.textContent };
+  }
 
-    const itemsHtml = items.map(it => {
-      const desc = (it.desc||'').toString().replace(/</g,'&lt;');
-      const qty = Number(it.qty||0).toFixed(2).replace('.00','');
-      const unit = Number(it.unit||0).toFixed(2);
-      const tax = Number(it.taxPct||0).toFixed(2);
-      const line = (Number(it.qty||0) * Number(it.unit||0)).toFixed(2);
-      return `<tr><td style="padding:8px;border-bottom:1px solid #eee">${desc}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${qty}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${unit}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${tax}%</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${line}</td></tr>`;
-    }).join('');
+  function populateInvoice(inv){
+    el('companyName').value = inv.companyName || '';
+    el('companyAddr').value = inv.companyAddr || '';
+    el('invoiceNo').value = inv.invoiceNo || '';
+    el('invoiceDate').value = inv.invoiceDate || '';
+    el('customerName').value = inv.customerName || '';
+    el('status').value = inv.status || 'Unpaid';
+    el('note').value = inv.note || '';
+    itemsBody.innerHTML = '';
+    if(inv.items && inv.items.length){
+      inv.items.forEach(it => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td><input class="it-desc" value="${escapeHtml(it.description||'')}" /></td>
+                        <td><input class="it-qty" type="number" value="${it.qty||0}" /></td>
+                        <td><input class="it-unit" type="number" value="${it.unit||0}" step="0.01" /></td>
+                        <td><input class="it-tax" type="number" value="${it.tax||0}" /></td>
+                        <td class="it-total">${(it.lineTotal||0).toFixed(2)}</td>`;
+        itemsBody.appendChild(tr); hookupRow(tr);
+      });
+    } else addItemBtn.click();
+    globalTax.value = inv.globalTax || 0; globalDiscount.value = inv.globalDiscount || 0;
+  }
 
-    // printable template
-    const html = `
-      <!doctype html><html><head><meta charset="utf-8"><title>Invoice ${meta.invoice||''}</title>
-      <style>
-        body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:28px}
-        .company{font-weight:900;font-size:28px;text-align:center;margin-bottom:4px}
-        .address{font-size:13px;color:#444;text-align:center;margin-bottom:18px}
-        .meta{display:flex;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap}
-        .meta div{width:48%}
-        table{width:100%;border-collapse:collapse;margin-top:8px}
-        th,td{padding:8px;font-size:13px}
-        th{background:#f6f8fb;text-align:left;border-bottom:1px solid #ddd}
-        .right{text-align:right}
-        .totals{margin-top:12px;width:100%;display:flex;justify-content:flex-end}
-        .totals table{width:360px;border-collapse:collapse}
-        .totals td{padding:8px;border-top:1px solid #eee}
-        .note{margin-top:18px;color:#444}
-      </style>
-      </head><body>
-      ${meta.company ? `<div class="company">${meta.company}</div>` : ''}
-      ${meta.address ? `<div class="address">${meta.address}</div>` : ''}
-      <div class="meta">
-        <div><strong>Invoice:</strong> ${meta.invoice || ''}<br><strong>Date:</strong> ${meta.date || ''}</div>
-        <div style="text-align:right"><strong>Customer:</strong> ${meta.customer || ''}<br><strong>Status:</strong> ${meta.status || ''}</div>
+  function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // Print invoice: create printable window markup styled simply to look like a real bill.
+  el('printInvoice').addEventListener('click', ()=>{
+    const invoice = gatherInvoice();
+    const printHtml = buildPrintHtml(invoice);
+    const w = window.open('', '_blank');
+    w.document.write(printHtml);
+    w.document.close();
+    // wait a bit then focus/print
+    setTimeout(()=> { w.focus(); w.print(); }, 300);
+  });
+
+  function buildPrintHtml(inv){
+    // simple CSS inline for print
+    const company = inv.companyName || '';
+    const companyBlock = company ? `<div style="text-align:center;font-weight:900;font-size:28px;margin-bottom:6px">${escapeHtml(company)}</div>
+      <div style="text-align:center;color:#666;margin-bottom:12px">${escapeHtml(inv.companyAddr||'')}</div>` : '';
+    const itemsRows = inv.items.map(it => `<tr>
+      <td style="padding:6px;border-bottom:1px solid #eee">${escapeHtml(it.description)}</td>
+      <td style="padding:6px;border-bottom:1px solid #eee;text-align:right">${it.qty}</td>
+      <td style="padding:6px;border-bottom:1px solid #eee;text-align:right">${(it.unit||0).toFixed(2)}</td>
+      <td style="padding:6px;border-bottom:1px solid #eee;text-align:right">${(it.tax||0).toFixed(2)}</td>
+      <td style="padding:6px;border-bottom:1px solid #eee;text-align:right">${(it.lineTotal||0).toFixed(2)}</td>
+    </tr>`).join('');
+    const totals = inv.totals || {subtotal:0,tax:0,discount:0,total:0};
+    return `<!doctype html><html><head><meta charset="utf-8"><title>Invoice ${escapeHtml(inv.invoiceNo||'')}</title>
+      <style>body{font-family:Arial,Helvetica,sans-serif;padding:28px;color:#111} table{width:100%;border-collapse:collapse} th{font-weight:700;color:#444;text-align:left;padding:6px} .right{text-align:right}</style></head><body>
+      ${companyBlock}
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <div>Invoice #: <strong>${escapeHtml(inv.invoiceNo||'')}</strong></div>
+        <div>Date: <strong>${escapeHtml(inv.invoiceDate||new Date().toLocaleDateString())}</strong></div>
       </div>
-
-      <table><thead><tr><th style="width:52%">Description</th><th style="width:12%" class="right">Qty</th><th style="width:14%" class="right">Unit</th><th style="width:12%" class="right">Tax</th><th style="width:10%" class="right">Total</th></tr></thead>
-      <tbody>${itemsHtml}</tbody></table>
-
-      <div class="totals">
-        <table>
-          <tr><td>Subtotal</td><td class="right">${totals.subtotal}</td></tr>
-          <tr><td>Tax</td><td class="right">${totals.tax}</td></tr>
-          <tr><td>Discount</td><td class="right">-${totals.discount}</td></tr>
-          <tr><td style="font-weight:900">Total</td><td class="right" style="font-weight:900">${totals.total}</td></tr>
+      <div style="margin-bottom:12px">Bill to: <strong>${escapeHtml(inv.customerName||'')}</strong></div>
+      <table><thead><tr><th>Description</th><th style="text-align:right">Qty</th><th style="text-align:right">Unit</th><th style="text-align:right">Tax%</th><th style="text-align:right">Line total</th></tr></thead><tbody>
+      ${itemsRows}
+      </tbody></table>
+      <div style="margin-top:18px;display:flex;justify-content:flex-end">
+        <table style="width:320px">
+          <tr><td style="padding:6px">Subtotal</td><td style="padding:6px;text-align:right">${totals.subtotal.toFixed(2)}</td></tr>
+          <tr><td style="padding:6px">Tax</td><td style="padding:6px;text-align:right">${totals.tax.toFixed(2)}</td></tr>
+          <tr><td style="padding:6px">Discount</td><td style="padding:6px;text-align:right">${totals.discount.toFixed(2)}</td></tr>
+          <tr style="font-weight:900"><td style="padding:6px">Total</td><td style="padding:6px;text-align:right">${totals.total.toFixed(2)}</td></tr>
         </table>
       </div>
+      <div style="margin-top:28px;color:#666">${escapeHtml(inv.note||'')}</div>
+      </body></html>`;
+  }
 
-      ${meta.note ? `<div class="note"><strong>Note:</strong> ${meta.note}</div>` : ''}
-      </body></html>
-    `;
-    const w = window.open('','_blank');
-    w.document.write(html); w.document.close();
-    // small delay to allow render then trigger print
-    setTimeout(()=> w.print(), 500);
-  });
+  // initial invoice setup
+  addItemBtn.click();
+  recalcInvoice();
 
-  /* ======= ID Designer (canvas) ======= */
-  const idCanvas = el('idCanvas'), idCtx = idCanvas.getContext('2d');
-  const idName = el('idName'), idRole = el('idRole'), idCompany = el('idCompany'), idBgColor = el('idBgColor');
-  const idPhotoInput = el('idPhotoInput'), idClearPhoto = el('idClearPhoto'), downloadId = el('downloadId');
-  let idPhoto = null;
-  const CANVAS_W = idCanvas.width, CANVAS_H = idCanvas.height;
+  /* =========================
+     ID card designer (canvas)
+     ========================= */
+  const idCanvas = el('idCanvas');
+  const idCtx = idCanvas.getContext('2d');
+  const idPhotoInput = el('idPhotoInput');
+  const clearPhotoBtn = el('clearPhoto');
+  const photoInfo = el('photoInfo');
+  const downloadIdBtn = el('downloadId');
+  const saveIdBtn = el('saveId');
+  const loadIdBtn = el('loadId');
 
+  let idPhoto = null; // Image object
   function drawId(){
-    idCtx.clearRect(0,0,CANVAS_W,CANVAS_H);
-    idCtx.fillStyle = idBgColor.value || '#ffffff';
-    idCtx.fillRect(0,0,CANVAS_W,CANVAS_H);
-
-    // left stripe
-    idCtx.fillStyle = 'rgba(0,0,0,0.04)'; idCtx.fillRect(0,0,360,CANVAS_H);
-
+    // clear
+    idCtx.clearRect(0,0,idCanvas.width,idCanvas.height);
+    // background
+    idCtx.fillStyle = '#ffffff';
+    idCtx.fillRect(0,0,idCanvas.width,idCanvas.height);
+    // small top bar
+    idCtx.fillStyle = '#f4f9ff';
+    idCtx.fillRect(0,0,idCanvas.width,72);
     // company
-    if(idCompany.value){
-      idCtx.fillStyle = '#063242'; idCtx.font = '800 46px Inter, Arial'; idCtx.fillText(idCompany.value, 400, 120);
-    }
-
-    // name
-    idCtx.fillStyle = '#0b2130'; idCtx.font = '800 44px Inter, Arial'; idCtx.fillText(idName.value || 'Full Name', 400, 230);
-    idCtx.font = '600 26px Inter, Arial'; idCtx.fillStyle = 'rgba(11,17,28,0.65)'; idCtx.fillText(idRole.value || 'Role / Title', 400, 270);
-
-    // photo area
-    const px=80, py=120, pw=240, ph=240;
-    idCtx.fillStyle = '#fff'; idCtx.fillRect(px,py,pw,ph);
-    idCtx.strokeStyle = 'rgba(0,0,0,0.06)'; idCtx.lineWidth = 3; idCtx.strokeRect(px,py,pw,ph);
-
+    const company = el('idCompany').value || '';
+    idCtx.fillStyle = '#0b2130';
+    idCtx.font = 'bold 20px Inter, Arial';
+    idCtx.textAlign = 'left';
+    idCtx.fillText(company, 140, 40);
+    // photo slot
+    idCtx.fillStyle = '#e9f2f8';
+    idCtx.fillRect(18, 18, 104, 104);
+    // draw photo if present (fit into 104x104)
     if(idPhoto){
-      const iw = idPhoto.naturalWidth || idPhoto.width, ih = idPhoto.naturalHeight || idPhoto.height;
-      const scale = Math.max(pw/iw, ph/ih);
-      const dw = iw*scale, dh = ih*scale;
-      const dx = px + (pw - dw)/2, dy = py + (ph - dh)/2;
+      const w = idPhoto.naturalWidth, h = idPhoto.naturalHeight;
+      const ratio = Math.min(104/w, 104/h);
+      const dw = w*ratio, dh = h*ratio;
+      const dx = 18 + (104 - dw)/2, dy = 18 + (104 - dh)/2;
       idCtx.drawImage(idPhoto, dx, dy, dw, dh);
-    } else {
-      idCtx.fillStyle = 'rgba(0,0,0,0.03)'; idCtx.fillRect(px+8,py+8,pw-16,ph-16);
-      idCtx.fillStyle = 'rgba(0,0,0,0.18)'; idCtx.font = '700 18px Inter, Arial'; idCtx.fillText('Photo', px+90, py + ph/2);
     }
+    // name & role
+    idCtx.fillStyle = '#0b2130';
+    idCtx.font = 'bold 18px Inter, Arial';
+    idCtx.textAlign = 'left';
+    idCtx.fillText(el('idName').value || 'Full name', 140, 92);
+    idCtx.font = '14px Inter, Arial';
+    idCtx.fillStyle = '#586673';
+    idCtx.fillText(el('idRole').value || 'Role / Title', 140, 116);
+    // optional details printed smaller
+    idCtx.font = '12px Inter, Arial';
+    idCtx.fillStyle = '#6b7480';
+    let y = 148;
+    const fields = [
+      {label:'Phone', value: el('idPhone').value},
+      {label:'Email', value: el('idEmail').value},
+      {label:'DOB', value: el('idDob').value},
+      {label:'Address', value: el('idAddress').value}
+    ];
+    fields.forEach(f => {
+      if(f.value){
+        idCtx.fillText(`${f.label}: ${f.value}`, 20, y);
+        y += 18;
+      }
+    });
+    // subtle border
+    idCtx.strokeStyle = 'rgba(0,0,0,0.04)';
+    idCtx.strokeRect(0,0,idCanvas.width,idCanvas.height);
   }
 
-  function loadLocalImageFile(file, cb){
-    if(!file) return cb(new Error('No file'));
-    const reader = new FileReader();
-    reader.onerror = () => {
-      const url = URL.createObjectURL(file);
-      const img = new Image();
-      img.onload = ()=> { URL.revokeObjectURL(url); cb(null,img); };
-      img.onerror = ()=> { URL.revokeObjectURL(url); cb(new Error('Failed to load image')); };
-      img.src = url;
-    };
-    reader.onload = () => {
-      const data = reader.result;
-      const img = new Image();
-      img.onload = ()=> cb(null,img);
-      img.onerror = ()=> cb(new Error('Failed to decode image'));
-      img.src = data;
-    };
-    reader.readAsDataURL(file);
-  }
+  // redraw whenever inputs change
+  ['idName','idRole','idCompany','idPhone','idEmail','idDob','idAddress'].forEach(id => {
+    el(id).addEventListener('input', drawId);
+  });
 
   idPhotoInput.addEventListener('change', (e)=>{
-    const f = e.target.files && e.target.files[0]; if(!f) return;
-    loadLocalImageFile(f, (err,img)=>{
-      if(err){ alert('Could not read photo. On iPhone, try Edit→Done in Photos app then re-upload.'); return; }
-      idPhoto = img; drawId();
-    });
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    const url = URL.createObjectURL(f);
+    const img = new Image();
+    img.onload = ()=>{
+      idPhoto = img;
+      photoInfo.textContent = `${f.name} (${Math.round(f.size/1024)}KB)`;
+      drawId();
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = ()=> { alert('Could not load photo. Try re-saving the image from your phone and uploading again.'); URL.revokeObjectURL(url); }
+    img.src = url;
   });
-  idClearPhoto.addEventListener('click', ()=> { idPhoto = null; idPhotoInput.value=''; drawId(); });
-  [idName,idRole,idCompany,idBgColor].forEach(i=> i.addEventListener('input', drawId));
+
+  clearPhotoBtn.addEventListener('click', ()=> {
+    idPhoto = null;
+    idPhotoInput.value = '';
+    photoInfo.textContent = '';
+    drawId();
+  });
+
+  downloadIdBtn.addEventListener('click', ()=>{
+    const url = idCanvas.toDataURL('image/png');
+    const a = document.createElement('a'); a.href = url; a.download = 'id-card.png'; a.click();
+  });
+
+  saveIdBtn.addEventListener('click', ()=>{
+    const state = {
+      name: el('idName').value, role: el('idRole').value, company: el('idCompany').value,
+      phone: el('idPhone').value, email: el('idEmail').value, dob: el('idDob').value, address: el('idAddress').value,
+      photo: idPhoto ? idCanvas.toDataURL('image/png') : null
+    };
+    localStorage.setItem('pr-saved-id', JSON.stringify(state));
+    alert('ID saved locally in your browser.');
+  });
+
+  loadIdBtn.addEventListener('click', ()=>{
+    const s = localStorage.getItem('pr-saved-id');
+    if(!s) return alert('No saved ID found.');
+    try{
+      const st = JSON.parse(s);
+      el('idName').value = st.name || '';
+      el('idRole').value = st.role || '';
+      el('idCompany').value = st.company || '';
+      el('idPhone').value = st.phone || '';
+      el('idEmail').value = st.email || '';
+      el('idDob').value = st.dob || '';
+      el('idAddress').value = st.address || '';
+      if(st.photo){
+        const img = new Image();
+        img.onload = ()=> { idPhoto = img; drawId(); };
+        img.src = st.photo;
+      } else { idPhoto = null; drawId(); }
+      alert('Loaded saved ID from browser storage.');
+    }catch(e){ alert('Failed to load ID.'); }
+  });
+
+  // initial draw
   drawId();
 
-  downloadId.addEventListener('click', ()=>{
-    const link = document.createElement('a'); link.href = idCanvas.toDataURL('image/png'); link.download = (idName.value || 'id') + '.png'; document.body.appendChild(link); link.click(); link.remove();
+  /* Accessibility: close theme dropdown on outside click */
+  document.addEventListener('click', (e)=>{
+    if(!document.getElementById('themeSelectWrap').contains(e.target)) document.getElementById('themeList').style.display = 'none';
   });
 
-  el('saveId').addEventListener('click', ()=>{
-    const payload = { name:idName.value, role:idRole.value, company:idCompany.value, bg:idBgColor.value, photo: idPhoto ? idCanvas.toDataURL('image/png') : null };
-    localStorage.setItem('pr-id-last', JSON.stringify(payload)); alert('ID saved locally.');
-  });
-  el('loadId').addEventListener('click', ()=>{
-    const s = localStorage.getItem('pr-id-last'); if(!s) return alert('No saved ID found.');
-    try{
-      const p = JSON.parse(s); idName.value = p.name||''; idRole.value = p.role||''; idCompany.value = p.company||''; if(p.bg) idBgColor.value = p.bg;
-      if(p.photo){ const img = new Image(); img.onload = ()=> { idPhoto = img; drawId(); }; img.src = p.photo; } else { idPhoto = null; drawId(); }
-    }catch(e){ alert('Failed to load saved ID.'); }
-  });
-
-  // UX small: prevent Enter in inputs from submitting anything
-  document.addEventListener('keydown', function(e){ if(e.key === 'Enter' && e.target && ['INPUT','TEXTAREA'].includes(e.target.tagName)) e.preventDefault(); });
-
-  // initial items
-  items = [{desc:'',qty:1,unit:0,taxPct:0}];
-  renderItems = renderItems; // allow hoisting
-  renderItems();
+  // Adjust sidebar width on small screens
+  function updateSidebarWidth(){ if(window.innerWidth < 420) sidebar.style.width = '94vw'; else sidebar.style.width = '360px'; }
+  window.addEventListener('resize', updateSidebarWidth);
+  updateSidebarWidth();
 </script>
 </body>
 </html>
