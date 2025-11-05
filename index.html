@@ -3,19 +3,29 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Invoice & ID Maker — PirateRuler</title>
-<meta name="description" content="Invoice builder and ID card designer — client-side. Create invoices, design IDs, download or print — no uploads." />
+<title>Invoice, ID & Letters — PirateRuler</title>
+<meta name="description" content="Invoice, ID card & document tools — private and client-side." />
 <meta name="theme-color" content="#f7fbff" />
 <link rel="icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect rx="14" width="64" height="64" fill="%236b7dff"/><text x="50%" y="50%" font-family="Inter,Arial,sans-serif" font-weight="800" font-size="26" text-anchor="middle" alignment-baseline="central" fill="white">PR</text></svg>'>
 <style>
+  /* Tokens */
   :root{
     --bg:#f3f7fb; --card:#ffffff; --muted:#6b7480; --text:#0b2130;
     --accent-start:#6b7dff; --accent-end:#0bb3ff;
     --glass: rgba(11,17,28,0.04);
     --radius:14px; --shadow-lg: 0 18px 50px rgba(3,12,30,0.18);
     --shadow-sm: 0 8px 24px rgba(3,12,30,0.08);
+    --input-bg: #fff; --input-border: rgba(10,20,40,0.06);
   }
-  html.dark { --bg:#071225; --card:#061028; --muted:#98a7bf; --text:#e9f1ff; --accent-start:#5ab3ff; --accent-end:#6b7dff; }
+  /* dark theme vars */
+  html.dark {
+    --bg:#071225; --card:#071827; --muted:#98a7bf; --text:#e9f1ff;
+    --accent-start:#5ab3ff; --accent-end:#6b7dff; --glass: rgba(255,255,255,0.02);
+    --shadow-lg: 0 18px 50px rgba(0,0,0,0.6);
+    --shadow-sm: 0 8px 24px rgba(0,0,0,0.45);
+    --input-bg: #09202b; --input-border: rgba(255,255,255,0.06);
+  }
+  /* other themes */
   html.ocean { --bg:#e8f7fb; --card:#ffffff; --muted:#4f6b75; --text:#063242; --accent-start:#00c2d1; --accent-end:#2b9fff; }
   html.sunset{ --bg:#fff6f8; --card:#fff; --muted:#7a6b77; --text:#2a1020; --accent-start:#ff7aa2; --accent-end:#ffb86b; }
 
@@ -25,15 +35,12 @@
     background: linear-gradient(180deg,var(--bg), #e9f6ff);
     color:var(--text); -webkit-font-smoothing:antialiased;
   }
-  a{color:inherit;text-decoration:none} /* no underlines everywhere */
-  .container{max-width:1280px;margin:14px auto;padding:18px;}
+  a{color:inherit;text-decoration:none}
+  .container{max-width:1280px;margin:14px auto;padding:18px}
 
   /* Header */
   header.header{
-    display:flex; align-items:center; justify-content:space-between; gap:12px;
-    padding:14px; border-radius:14px;
-    background:linear-gradient(90deg, rgba(107,125,255,0.06), rgba(11,179,255,0.02));
-    box-shadow:var(--shadow-sm);
+    display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border-radius:14px;background:linear-gradient(90deg, rgba(107,125,255,0.06), rgba(11,179,255,0.02));box-shadow:var(--shadow-sm);
   }
   .brand{display:flex;align-items:center;gap:12px;min-width:0}
   .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent-start),var(--accent-end));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:20px;flex-shrink:0}
@@ -43,31 +50,35 @@
 
   .header-actions{display:flex;gap:10px;align-items:center}
   .btn{padding:9px 12px;border-radius:10px;border:none;cursor:pointer;font-weight:800;background:transparent}
-  .btn.ghost{background:transparent;border:1px solid rgba(0,0,0,0.06);color:var(--text)}
+  .btn.ghost{background:transparent;border:1px solid var(--input-border);color:var(--text)}
   .btn.theme{background:linear-gradient(90deg,var(--accent-start),var(--accent-end));color:white;border-radius:999px;padding:10px 16px}
+  .hamb{width:46px;height:46px;border-radius:10px;background:var(--glass);display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid var(--input-border)}
 
-  .hamb{width:46px;height:46px;border-radius:10px;background:var(--glass);display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid rgba(0,0,0,0.04)}
-
-  /* Tabs / hero */
-  .hero{margin-top:18px;padding:20px;border-radius:16px;background:linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.96));box-shadow:var(--shadow-lg)}
+  /* hero + tabs */
+  .hero{margin-top:18px;padding:20px;border-radius:16px;background:linear-gradient(180deg,var(--card), rgba(255,255,255,0.96));box-shadow:var(--shadow-lg)}
   .hero .big{font-size:28px;font-weight:900;margin:0}
   .hero .small{color:var(--muted);margin-top:8px}
   .tabs{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
   .tab{padding:10px 16px;border-radius:999px;background:transparent;border:1px solid rgba(11,17,28,0.06);cursor:pointer;color:var(--muted);font-weight:700}
   .tab.active{background:linear-gradient(90deg,var(--accent-start),var(--accent-end));color:white;box-shadow:0 10px 30px rgba(11,107,255,0.12);transform:translateY(-4px)}
 
-  /* main grid */
+  /* grid */
   .grid{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-top:12px;align-items:start}
   @media(max-width:980px){ .grid{grid-template-columns:1fr} }
 
   .card{background:var(--card);border-radius:14px;padding:18px;box-shadow:var(--shadow-sm);border:1px solid rgba(0,0,0,0.04)}
   .hint{color:var(--muted);font-size:13px;margin-bottom:10px}
-  input[type="text"], input[type="number"], input[type="date"], select, textarea { width:100%; padding:12px;border-radius:10px;border:1px solid rgba(10,20,40,0.06); font-size:15px; background:transparent; color:var(--text); resize:vertical }
+  input[type="text"], input[type="number"], input[type="date"], select, textarea {
+    width:100%; padding:12px;border-radius:10px;border:1px solid var(--input-border); font-size:15px; background:var(--input-bg); color:var(--text); resize:vertical;
+  }
+  /* ensure inputs readable in dark */
+  html.dark input, html.dark textarea, html.dark select { color:var(--text); background:var(--input-bg); border:1px solid rgba(255,255,255,0.06) }
+
   .row{display:flex;gap:10px}
   .primary{background:linear-gradient(90deg,var(--accent-start),var(--accent-end));color:white;padding:9px 14px;border-radius:10px;border:none;font-weight:800;cursor:pointer}
-  .ghost{background:transparent;border:1px solid rgba(0,0,0,0.06);padding:9px 12px;border-radius:10px;cursor:pointer}
+  .ghost{background:transparent;border:1px solid var(--input-border);padding:9px 12px;border-radius:10px;cursor:pointer}
 
-  /* invoice table */
+  /* table */
   .table{width:100%;border-collapse:collapse;margin-top:12px}
   .table th, .table td{padding:10px;text-align:left;border-bottom:1px solid rgba(0,0,0,0.06)}
   .table th{font-weight:800;color:var(--muted)}
@@ -75,29 +86,31 @@
 
   /* right panel */
   aside{align-self:start}
-  .feature-panel{background:var(--card);border:1px solid rgba(0,0,0,0.06);border-radius:14px;box-shadow:var(--shadow-sm);padding:12px}
+  .feature-panel{background:var(--card);border:1px solid var(--input-border);border-radius:14px;box-shadow:var(--shadow-sm);padding:12px}
   @media(min-width:981px){ .feature-panel{position:sticky;top:18px;max-height:calc(100vh - 36px);overflow:auto} }
 
-  .feature{display:flex;gap:12px;align-items:center;padding:12px;border-radius:12px;background:var(--card);border:1px solid rgba(0,0,0,0.06);box-shadow:var(--shadow-sm);min-height:90px}
+  .feature{display:flex;gap:12px;align-items:center;padding:12px;border-radius:12px;background:var(--card);border:1px solid var(--input-border);box-shadow:var(--shadow-sm);min-height:90px}
   .f-icon{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--accent-start),var(--accent-end));flex-shrink:0}
   .f-title{font-weight:800}
   .f-desc{color:var(--muted);font-size:13px}
 
-  /* sidebar specifics */
-  .sidebar{position:fixed;top:0;right:0;height:100vh;width:360px;max-width:94vw;transform:translateX(120%);transition:transform .28s cubic-bezier(.2,.9,.3,1);z-index:90;background:var(--card);box-shadow:-40px 0 80px rgba(2,8,20,0.25);padding:20px;border-left:1px solid rgba(0,0,0,0.04);overflow:auto;border-radius:0 0 0 14px}
-  .sidebar.open{transform:translateX(0)}
-  .nav-list{margin-top:10px;display:flex;flex-direction:column;gap:12px}
-  .nav-list a{display:block;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(0,0,0,0.01), rgba(0,0,0,0.02));color:var(--text);font-weight:600;text-decoration:none}
-  .backup{margin-top:18px;color:var(--muted);font-size:13px}
+  /* editor */
+  .editor-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  .editor-toolbar button{padding:8px;border-radius:8px;border:1px solid var(--input-border);background:transparent;cursor:pointer}
+  .editor{min-height:220px;border-radius:12px;padding:12px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text);overflow:auto}
 
   /* footer */
   footer{margin-top:18px;padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.96));text-align:center;box-shadow:var(--shadow-lg)}
   footer .visit{padding:10px 18px;border-radius:999px;background:linear-gradient(90deg,#ff7aa2 0%, #6b7dff 100%);color:#fff;font-weight:800;text-decoration:none;display:inline-block}
 
-  /* small helpers */
   .muted{color:var(--muted)}
   .sm{font-size:13px;color:var(--muted)}
   .hidden{display:none}
+  /* small responsive tweaks */
+  @media(max-width:520px){
+    .logo{width:48px;height:48px;font-size:18px}
+    .hero .big{font-size:20px}
+  }
 </style>
 </head>
 <body>
@@ -109,7 +122,7 @@
       <a href="/" aria-label="Home" style="display:flex;align-items:center;gap:12px">
         <div class="logo" aria-hidden="true">PR</div>
         <div class="brand-text">
-          <div class="title-strong">Invoice & ID Maker</div>
+          <div class="title-strong">Invoice • ID • Letters</div>
           <div class="by">by PirateRuler.com</div>
         </div>
       </a>
@@ -118,37 +131,36 @@
     <div class="header-actions" role="navigation">
       <div class="theme-select" id="themeSelectWrap">
         <button id="themeBtn" class="btn theme" title="Theme">Light ▾</button>
-        <div id="themeList" class="theme-list" aria-hidden="true" style="display:none;position:absolute;right:18px;top:72px;background:var(--card);border-radius:10px;padding:8px;box-shadow:var(--shadow-sm);z-index:1000;">
+        <div id="themeList" style="display:none;position:absolute;right:18px;top:72px;background:var(--card);border-radius:10px;padding:8px;box-shadow:var(--shadow-sm);z-index:1000;">
           <div class="theme-item" data-theme="light" style="padding:8px;cursor:pointer">Light</div>
           <div class="theme-item" data-theme="dark" style="padding:8px;cursor:pointer">Dark</div>
           <div class="theme-item" data-theme="ocean" style="padding:8px;cursor:pointer">Ocean</div>
           <div class="theme-item" data-theme="sunset" style="padding:8px;cursor:pointer">Sunset</div>
         </div>
       </div>
-
       <div id="hambBtn" class="hamb" title="Open menu" aria-haspopup="true" aria-controls="sidebar">☰</div>
     </div>
   </header>
 
   <!-- HERO + Tabs -->
   <section class="hero" aria-labelledby="heroTitle">
-    <h1 id="heroTitle" class="big">Invoice Builder & ID Designer</h1>
-    <p class="small">Create invoices and ID cards entirely client-side. Upload photos from your phone and print or download — no uploads.</p>
+    <h1 id="heroTitle" class="big">Invoice Builder, ID Designer & Letters</h1>
+    <p class="small">Create invoices, design ID cards, write letters and printable docs — all client-side. Upload photos from your phone and print or download — no uploads.</p>
 
     <div class="tabs" role="tablist" aria-label="Tools">
-      <button class="tab active" data-target="invoice" role="tab" id="tab-invoice">Invoice Builder</button>
-      <button class="tab" data-target="idcard" role="tab" id="tab-id">ID Card Designer</button>
+      <button class="tab active" data-target="invoice" role="tab">Invoice Builder</button>
+      <button class="tab" data-target="idcard" role="tab">ID Card Designer</button>
+      <button class="tab" data-target="letters" role="tab">Letters & Documents</button>
     </div>
   </section>
 
-  <!-- Main Grid -->
+  <!-- MAIN -->
   <main class="grid" role="main">
     <div>
       <!-- INVOICE -->
       <section id="invoice" class="card" aria-labelledby="invTitle">
         <h2 id="invTitle">Invoice Builder</h2>
         <p class="hint">Create invoices quickly — add items, set tax & discount, print or export. Everything runs in your browser (no uploads).</p>
-
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <input id="companyName" type="text" placeholder="Company name (leave blank to hide on print)" />
           <input id="companyAddr" type="text" placeholder="Company address (optional)" />
@@ -238,9 +250,60 @@
         </div>
         <div class="sm" style="margin-top:12px">Tip: upload a square headshot for best results. Saved items are stored only in your browser (localStorage).</div>
       </section>
+
+      <!-- LETTERS -->
+      <section id="letters" class="card hidden" aria-labelledby="lettersTitle">
+        <h2 id="lettersTitle">Letters & Document Maker</h2>
+        <p class="hint">Write letters, hospital letters, invitations or create table-based documents. Use templates and print/export directly.</p>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <button class="ghost" data-template="blank">Blank</button>
+          <button class="ghost" data-template="normal">Normal Letter</button>
+          <button class="ghost" data-template="hospital">Hospital Letter</button>
+          <button class="ghost" data-template="invite">Invitation / Function</button>
+          <button class="ghost" id="openTableMaker">Table Maker</button>
+        </div>
+
+        <div class="editor-toolbar" aria-hidden="false">
+          <button data-cmd="bold"><b>B</b></button>
+          <button data-cmd="italic"><i>I</i></button>
+          <button data-cmd="underline"><u>U</u></button>
+          <button data-cmd="h1">H1</button>
+          <button data-cmd="h2">H2</button>
+          <button data-cmd="justifyLeft">⟵</button>
+          <button data-cmd="justifyCenter">⟷</button>
+          <button data-cmd="justifyRight">⟶</button>
+          <button data-cmd="insertDate">Date</button>
+          <button data-cmd="clear">Clear</button>
+        </div>
+
+        <div id="editor" class="editor" contenteditable="true" spellcheck="true">
+          <p>Dear [Name],</p>
+          <p>Write your letter here...</p>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+          <button id="printLetter" class="primary">Print / Save as PDF</button>
+          <button id="exportLetterHtml" class="ghost">Export HTML</button>
+          <button id="exportLetterTxt" class="ghost">Export TXT</button>
+          <button id="clearLetter" class="ghost">Clear</button>
+        </div>
+
+        <!-- table maker hidden modal (inline) -->
+        <div id="tableMaker" class="card hidden" style="margin-top:14px">
+          <h3 style="margin:0 0 8px 0">Table Maker</h3>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input id="tblRows" type="number" placeholder="Rows" value="3" style="width:110px" />
+            <input id="tblCols" type="number" placeholder="Cols" value="3" style="width:110px" />
+            <button id="makeTable" class="primary">Create Table</button>
+            <button id="insertTable" class="ghost">Insert into Editor</button>
+          </div>
+          <div id="tblPreview" style="margin-top:12px;overflow:auto"></div>
+        </div>
+      </section>
     </div>
 
-    <!-- Right panel -->
+    <!-- RIGHT: features / quick tips -->
     <aside>
       <div class="feature-panel">
         <div style="font-weight:900;margin-bottom:10px">PirateRuler Tools</div>
@@ -249,7 +312,7 @@
           <div class="f-icon">⚡</div>
           <div>
             <div class="f-title">Fast & Local</div>
-            <div class="f-desc">Everything runs in your browser for speed and privacy.</div>
+            <div class="f-desc">Everything runs in your browser — private and fast.</div>
           </div>
         </div>
 
@@ -257,105 +320,96 @@
           <div class="f-icon" style="background:linear-gradient(135deg,#8ee36b,#2bbf6f)">📱</div>
           <div>
             <div class="f-title">Mobile-friendly</div>
-            <div class="f-desc">Upload screenshots & photos from your phone camera roll.</div>
+            <div class="f-desc">Upload photos & screenshots from your phone camera roll.</div>
           </div>
         </div>
 
         <div style="margin-top:12px;padding:12px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.96),rgba(255,255,255,0.98));box-shadow:var(--shadow-sm)">
           <div style="font-weight:800">Quick tips</div>
           <ul class="sm" style="margin:8px 0 0 18px;padding:0">
-            <li>Use browser Print to save invoices as PDF.</li>
+            <li>Use Print → Save as PDF to store invoices or letters.</li>
             <li>iOS photos sometimes need Edit → Done to allow pixel reading — re-save if errors occur.</li>
-            <li>Saved invoices & IDs are stored only in your browser (localStorage).</li>
+            <li>Saved invoices, IDs & letters are stored only in your browser (localStorage).</li>
           </ul>
         </div>
       </div>
     </aside>
   </main>
 
-  <!-- Footer -->
+  <!-- Footer (single button) -->
   <footer>
     <a class="visit" href="https://pirateruler.com" target="_blank" rel="noopener noreferrer">Visit PirateRuler.com</a>
     <div style="height:12px"></div>
-    <small class="muted">© <span id="year"></span> PirateRuler — Invoice & ID Maker (client-side)</small>
+    <small class="muted">© <span id="year"></span> PirateRuler</small>
   </footer>
 
-  <!-- Sidebar (links only, no underlines) -->
-  <aside id="sidebar" class="sidebar" role="dialog" aria-modal="true" aria-hidden="true">
+  <!-- Sidebar -->
+  <aside id="sidebar" class="card sidebar hidden" style="position:fixed;top:0;right:0;height:100vh;width:360px;transform:translateX(120%);transition:transform .28s;z-index:120;padding:18px;overflow:auto;">
     <div style="display:flex;justify-content:flex-end"><button id="closeSidebar" class="ghost">Close</button></div>
     <h3 style="margin-top:6px">Quick links</h3>
-    <p class="muted">Backup & resources</p>
-    <nav class="nav-list" aria-label="PirateRuler quick links">
-      <a href="https://www.pirateruler.com/post/about.html" target="_blank" rel="noopener noreferrer">About — PirateRuler</a>
-      <a href="https://www.pirateruler.com/post/privacy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+    <nav style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+      <a href="https://www.pirateruler.com/post/about.html" target="_blank" rel="noopener noreferrer">About</a>
+      <a href="https://www.pirateruler.com/post/privacy.html" target="_blank" rel="noopener noreferrer">Privacy</a>
       <a href="https://www.pirateruler.com/post/contact.html" target="_blank" rel="noopener noreferrer">Contact</a>
-      <a href="https://www.pirateruler.com/post/terms.html" target="_blank" rel="noopener noreferrer">Terms & Service</a>
     </nav>
-    <div class="backup">If the site is offline visit PirateRuler for backups:<br><a href="https://pirateruler.com" target="_blank" rel="noopener noreferrer">pirateruler.com</a></div>
+    <div style="margin-top:18px;color:var(--muted);font-size:13px">Backup & resources: <a href="https://pirateruler.com" target="_blank" rel="noopener noreferrer">pirateruler.com</a></div>
   </aside>
-
 </div>
 
 <script>
-  // small helpers
+  // helpers
   const el = id => document.getElementById(id);
   document.getElementById('year').textContent = new Date().getFullYear();
 
-  // Theme selector
+  /* THEME */
   const root = document.documentElement;
   const themeBtn = el('themeBtn');
-  const themeList = document.querySelector('.theme-list');
   (function initTheme(){
     const saved = localStorage.getItem('pr-theme') || 'light';
     applyTheme(saved);
   })();
-  themeBtn.addEventListener('click', e => {
-    const list = document.querySelector('#themeList');
+  document.querySelectorAll('.theme-item').forEach(it => it.addEventListener('click', e=>{
+    const t = e.currentTarget.dataset.theme; applyTheme(t); document.getElementById('themeList').style.display='none';
+  }));
+  themeBtn.addEventListener('click', ()=> {
+    const list = document.getElementById('themeList');
     list.style.display = list.style.display === 'block' ? 'none' : 'block';
   });
-  document.querySelectorAll('.theme-item').forEach(it => it.addEventListener('click', (e) => {
-    const t = e.currentTarget.dataset.theme;
-    applyTheme(t);
-    document.querySelector('#themeList').style.display = 'none';
-  }));
   function applyTheme(t){
     ['dark','ocean','sunset'].forEach(c => root.classList.remove(c));
-    if(t === 'dark') { root.classList.add('dark'); themeBtn.textContent = 'Dark ▾'; localStorage.setItem('pr-theme','dark'); }
-    else if(t === 'ocean') { root.classList.add('ocean'); themeBtn.textContent = 'Ocean ▾'; localStorage.setItem('pr-theme','ocean'); }
-    else if(t === 'sunset') { root.classList.add('sunset'); themeBtn.textContent = 'Sunset ▾'; localStorage.setItem('pr-theme','sunset'); }
-    else { themeBtn.textContent = 'Light ▾'; localStorage.setItem('pr-theme','light'); }
+    if(t==='dark'){ root.classList.add('dark'); themeBtn.textContent='Dark ▾'; localStorage.setItem('pr-theme','dark'); }
+    else if(t==='ocean'){ root.classList.add('ocean'); themeBtn.textContent='Ocean ▾'; localStorage.setItem('pr-theme','ocean'); }
+    else if(t==='sunset'){ root.classList.add('sunset'); themeBtn.textContent='Sunset ▾'; localStorage.setItem('pr-theme','sunset'); }
+    else { themeBtn.textContent='Light ▾'; localStorage.setItem('pr-theme','light'); }
   }
+  document.addEventListener('click', (e)=> { if(!document.getElementById('themeSelectWrap')?.contains(e.target)) document.getElementById('themeList').style.display='none'; });
 
-  // Sidebar
+  /* SIDEBAR */
   const sidebar = el('sidebar'), hambBtn = el('hambBtn'), closeSidebar = el('closeSidebar');
-  function openSidebar(){ sidebar.classList.add('open'); sidebar.setAttribute('aria-hidden','false'); }
-  function closeSB(){ sidebar.classList.remove('open'); sidebar.setAttribute('aria-hidden','true'); }
-  hambBtn.addEventListener('click', openSidebar);
+  function openSidebar(){ sidebar.style.transform='translateX(0)'; sidebar.classList.remove('hidden'); sidebar.setAttribute('aria-hidden','false'); }
+  function closeSB(){ sidebar.style.transform='translateX(120%)'; sidebar.setAttribute('aria-hidden','true'); setTimeout(()=> sidebar.classList.add('hidden'), 320); }
+  hambBtn.addEventListener('click', ()=> { openSidebar(); });
   closeSidebar.addEventListener('click', closeSB);
   document.addEventListener('click', (e)=> {
-    if (!sidebar.classList.contains('open')) return;
+    if (!sidebar || sidebar.style.transform==='translateX(120%)') return;
     if (!sidebar.contains(e.target) && !hambBtn.contains(e.target)) closeSB();
   });
 
-  // Tabs (start at invoice)
+  /* TABS */
   const tabs = Array.from(document.querySelectorAll('.tab'));
-  function showTab(id){
-    document.querySelectorAll('main section.card').forEach(s => s.classList.add('hidden'));
-    const elTab = document.getElementById(id);
+  function showTab(target){
+    document.querySelectorAll('main section.card').forEach(s=>s.classList.add('hidden'));
+    const elTab = document.getElementById(target);
     if(elTab) elTab.classList.remove('hidden');
-    tabs.forEach(t => t.classList.toggle('active', t.dataset.target === id));
-    // short scroll to top of section
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.target === target));
     setTimeout(()=> {
-      const rect = elTab.getBoundingClientRect();
-      if(rect) window.scrollTo({top: window.scrollY + rect.top - 70, behavior:'smooth'});
+      if(elTab) elTab.scrollIntoView({behavior:'smooth', block:'start'});
     }, 70);
   }
   tabs.forEach(t => t.addEventListener('click', ()=> showTab(t.dataset.target)));
   showTab('invoice');
 
-  /* =========================
-     Invoice logic (simple)
-     ========================= */
+  /* ================= INVOICE LOGIC (unchanged behavior) ================ */
   const itemsBody = el('itemsBody');
   const addItemBtn = el('addItem');
   const clearItemsBtn = el('clearItems');
@@ -365,6 +419,27 @@
   const taxTotalEl = el('taxTotal');
   const discTotalEl = el('discTotal');
   const finalTotalEl = el('finalTotal');
+
+  function hookupRow(tr){
+    ['it-qty','it-unit','it-tax'].forEach(cls => {
+      const input = tr.querySelector('.' + cls);
+      if(input) input.addEventListener('input', recalcInvoice);
+    });
+  }
+  addItemBtn.addEventListener('click', ()=> {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input class="it-desc" type="text" placeholder="Item description" /></td>
+      <td><input class="it-qty" type="number" value="1" min="0" /></td>
+      <td><input class="it-unit" type="number" value="0" step="0.01" /></td>
+      <td><input class="it-tax" type="number" value="0" /></td>
+      <td class="it-total">0.00</td>
+    `;
+    itemsBody.appendChild(tr); hookupRow(tr); recalcInvoice();
+  });
+  Array.from(itemsBody.querySelectorAll('tr')).forEach(hookupRow);
+  clearItemsBtn.addEventListener('click', ()=> { itemsBody.innerHTML=''; addItemBtn.click(); recalcInvoice(); });
+  [globalTax, globalDiscount].forEach(inp => inp.addEventListener('input', recalcInvoice));
 
   function recalcInvoice(){
     const rows = Array.from(itemsBody.querySelectorAll('tr'));
@@ -379,7 +454,6 @@
       taxTotal += lineTax;
       r.querySelector('.it-total').textContent = (line + lineTax).toFixed(2);
     });
-    // apply global tax and discount
     const gTaxPct = parseFloat(globalTax.value || 0);
     const gDiscPct = parseFloat(globalDiscount.value || 0);
     const gTax = subtotal * (gTaxPct/100);
@@ -391,65 +465,20 @@
     discTotalEl.textContent = gDisc.toFixed(2);
     finalTotalEl.textContent = total.toFixed(2);
   }
-
-  addItemBtn.addEventListener('click', ()=> {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><input class="it-desc" type="text" placeholder="Item description" /></td>
-      <td><input class="it-qty" type="number" value="1" min="0" /></td>
-      <td><input class="it-unit" type="number" value="0" step="0.01" /></td>
-      <td><input class="it-tax" type="number" value="0" /></td>
-      <td class="it-total">0.00</td>
-    `;
-    itemsBody.appendChild(tr);
-    hookupRow(tr);
-    recalcInvoice();
-  });
-
-  function hookupRow(tr){
-    ['it-qty','it-unit','it-tax'].forEach(cls => {
-      const input = tr.querySelector('.' + cls);
-      if(input) input.addEventListener('input', recalcInvoice);
-    });
-  }
-
-  // hookup initial rows
-  Array.from(itemsBody.querySelectorAll('tr')).forEach(hookupRow);
-  clearItemsBtn.addEventListener('click', ()=> {
-    itemsBody.innerHTML = '';
-    addItemBtn.click();
-    recalcInvoice();
-  });
-
-  [globalTax, globalDiscount].forEach(inp => inp.addEventListener('input', recalcInvoice));
-
-  // export / save invoice
+  // export / save / print — simple
   el('exportInvoiceJSON').addEventListener('click', ()=>{
     const invoice = gatherInvoice();
     const blob = new Blob([JSON.stringify(invoice, null, 2)], {type:'application/json'});
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'invoice.json'; a.click(); URL.revokeObjectURL(a.href);
   });
-  el('saveLocally').addEventListener('click', ()=>{
-    localStorage.setItem('pr-last-invoice', JSON.stringify(gatherInvoice()));
-    alert('Invoice saved locally in your browser.');
-  });
-  el('loadLast').addEventListener('click', ()=>{
-    const s = localStorage.getItem('pr-last-invoice');
-    if(!s) return alert('No saved invoice found.');
-    try{
-      const inv = JSON.parse(s);
-      populateInvoice(inv);
-      recalcInvoice();
-      alert('Loaded last invoice.');
-    }catch(e){ alert('Failed to load invoice.'); }
+  el('saveLocally').addEventListener('click', ()=>{ localStorage.setItem('pr-last-invoice', JSON.stringify(gatherInvoice())); alert('Invoice saved locally.'); });
+  el('loadLast').addEventListener('click', ()=> {
+    const s = localStorage.getItem('pr-last-invoice'); if(!s) return alert('No saved invoice found.'); try{ populateInvoice(JSON.parse(s)); recalcInvoice(); alert('Loaded last invoice.'); }catch(e){ alert('Failed to load invoice.'); }
   });
   el('resetInvoice').addEventListener('click', ()=> {
     if(!confirm('Reset invoice?')) return;
-    el('companyName').value=''; el('companyAddr').value=''; el('invoiceNo').value=''; el('invoiceDate').value=''; el('customerName').value=''; el('note').value='';
-    itemsBody.innerHTML = '';
-    addItemBtn.click();
-    globalTax.value = '0'; globalDiscount.value = '0';
-    recalcInvoice();
+    ['companyName','companyAddr','invoiceNo','invoiceDate','customerName','note'].forEach(id=> el(id).value='');
+    itemsBody.innerHTML=''; addItemBtn.click(); globalTax.value='0'; globalDiscount.value='0'; recalcInvoice();
   });
 
   function gatherInvoice(){
@@ -474,16 +503,10 @@
       totals: {subtotal: parseFloat(subTotalEl.textContent||0), tax: parseFloat(taxTotalEl.textContent||0), discount: parseFloat(discTotalEl.textContent||0), total: parseFloat(finalTotalEl.textContent||0)}
     };
   }
-
   function populateInvoice(inv){
-    el('companyName').value = inv.companyName || '';
-    el('companyAddr').value = inv.companyAddr || '';
-    el('invoiceNo').value = inv.invoiceNo || '';
-    el('invoiceDate').value = inv.invoiceDate || '';
-    el('customerName').value = inv.customerName || '';
+    ['companyName','companyAddr','invoiceNo','invoiceDate','customerName','note'].forEach(k=> el(k).value = inv[k] || '');
     el('status').value = inv.status || 'Unpaid';
-    el('note').value = inv.note || '';
-    itemsBody.innerHTML = '';
+    itemsBody.innerHTML='';
     if(inv.items && inv.items.length){
       inv.items.forEach(it => {
         const tr = document.createElement('tr');
@@ -497,22 +520,14 @@
     } else addItemBtn.click();
     globalTax.value = inv.globalTax || 0; globalDiscount.value = inv.globalDiscount || 0;
   }
-
   function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  // Print invoice: create printable window markup styled simply to look like a real bill.
   el('printInvoice').addEventListener('click', ()=>{
-    const invoice = gatherInvoice();
-    const printHtml = buildPrintHtml(invoice);
-    const w = window.open('', '_blank');
-    w.document.write(printHtml);
-    w.document.close();
-    // wait a bit then focus/print
-    setTimeout(()=> { w.focus(); w.print(); }, 300);
+    const invoice = gatherInvoice(); const printHtml = buildPrintHtml(invoice);
+    const w = window.open('', '_blank'); w.document.write(printHtml); w.document.close();
+    setTimeout(()=>{ w.focus(); w.print(); }, 300);
   });
-
   function buildPrintHtml(inv){
-    // simple CSS inline for print
     const company = inv.companyName || '';
     const companyBlock = company ? `<div style="text-align:center;font-weight:900;font-size:28px;margin-bottom:6px">${escapeHtml(company)}</div>
       <div style="text-align:center;color:#666;margin-bottom:12px">${escapeHtml(inv.companyAddr||'')}</div>` : '';
@@ -525,7 +540,7 @@
     </tr>`).join('');
     const totals = inv.totals || {subtotal:0,tax:0,discount:0,total:0};
     return `<!doctype html><html><head><meta charset="utf-8"><title>Invoice ${escapeHtml(inv.invoiceNo||'')}</title>
-      <style>body{font-family:Arial,Helvetica,sans-serif;padding:28px;color:#111} table{width:100%;border-collapse:collapse} th{font-weight:700;color:#444;text-align:left;padding:6px} .right{text-align:right}</style></head><body>
+      <style>body{font-family:Arial,Helvetica,sans-serif;padding:28px;color:#111} table{width:100%;border-collapse:collapse} th{font-weight:700;color:#444;text-align:left;padding:6px} </style></head><body>
       ${companyBlock}
       <div style="display:flex;justify-content:space-between;margin-bottom:8px">
         <div>Invoice #: <strong>${escapeHtml(inv.invoiceNo||'')}</strong></div>
@@ -547,60 +562,39 @@
       </body></html>`;
   }
 
-  // initial invoice setup
-  addItemBtn.click();
-  recalcInvoice();
+  // kick initial
+  addItemBtn.click(); recalcInvoice();
 
-  /* =========================
-     ID card designer (canvas)
-     ========================= */
-  const idCanvas = el('idCanvas');
-  const idCtx = idCanvas.getContext('2d');
-  const idPhotoInput = el('idPhotoInput');
-  const clearPhotoBtn = el('clearPhoto');
-  const photoInfo = el('photoInfo');
-  const downloadIdBtn = el('downloadId');
-  const saveIdBtn = el('saveId');
-  const loadIdBtn = el('loadId');
-
-  let idPhoto = null; // Image object
+  /* ================= ID CARD (robust image load) ================= */
+  const idCanvas = el('idCanvas'), idCtx = idCanvas.getContext('2d');
+  const idPhotoInput = el('idPhotoInput'), clearPhotoBtn = el('clearPhoto'), photoInfo = el('photoInfo');
+  let idPhoto = null;
   function drawId(){
-    // clear
     idCtx.clearRect(0,0,idCanvas.width,idCanvas.height);
-    // background
-    idCtx.fillStyle = '#ffffff';
+    idCtx.fillStyle = (root.classList.contains('dark') ? '#071827' : '#ffffff');
     idCtx.fillRect(0,0,idCanvas.width,idCanvas.height);
-    // small top bar
-    idCtx.fillStyle = '#f4f9ff';
-    idCtx.fillRect(0,0,idCanvas.width,72);
-    // company
-    const company = el('idCompany').value || '';
-    idCtx.fillStyle = '#0b2130';
+    idCtx.fillStyle = (root.classList.contains('dark') ? '#0b2130' : '#0b2130'); // title color
     idCtx.font = 'bold 20px Inter, Arial';
     idCtx.textAlign = 'left';
+    const company = el('idCompany').value || '';
     idCtx.fillText(company, 140, 40);
-    // photo slot
     idCtx.fillStyle = '#e9f2f8';
-    idCtx.fillRect(18, 18, 104, 104);
-    // draw photo if present (fit into 104x104)
+    idCtx.fillRect(18,18,104,104);
     if(idPhoto){
-      const w = idPhoto.naturalWidth, h = idPhoto.naturalHeight;
-      const ratio = Math.min(104/w, 104/h);
-      const dw = w*ratio, dh = h*ratio;
-      const dx = 18 + (104 - dw)/2, dy = 18 + (104 - dh)/2;
-      idCtx.drawImage(idPhoto, dx, dy, dw, dh);
+      try{
+        const w = idPhoto.naturalWidth, h = idPhoto.naturalHeight;
+        const ratio = Math.min(104/w, 104/h);
+        const dw = w*ratio, dh = h*ratio;
+        const dx = 18 + (104-dw)/2, dy = 18 + (104-dh)/2;
+        idCtx.drawImage(idPhoto, dx, dy, dw, dh);
+      }catch(e){ console.error('draw error', e); }
     }
-    // name & role
-    idCtx.fillStyle = '#0b2130';
+    idCtx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text') || '#0b2130';
     idCtx.font = 'bold 18px Inter, Arial';
-    idCtx.textAlign = 'left';
     idCtx.fillText(el('idName').value || 'Full name', 140, 92);
-    idCtx.font = '14px Inter, Arial';
-    idCtx.fillStyle = '#586673';
+    idCtx.font = '14px Inter, Arial'; idCtx.fillStyle = '#586673';
     idCtx.fillText(el('idRole').value || 'Role / Title', 140, 116);
-    // optional details printed smaller
-    idCtx.font = '12px Inter, Arial';
-    idCtx.fillStyle = '#6b7480';
+    idCtx.font = '12px Inter, Arial'; idCtx.fillStyle = '#6b7480';
     let y = 148;
     const fields = [
       {label:'Phone', value: el('idPhone').value},
@@ -608,92 +602,123 @@
       {label:'DOB', value: el('idDob').value},
       {label:'Address', value: el('idAddress').value}
     ];
-    fields.forEach(f => {
-      if(f.value){
-        idCtx.fillText(`${f.label}: ${f.value}`, 20, y);
-        y += 18;
-      }
-    });
-    // subtle border
-    idCtx.strokeStyle = 'rgba(0,0,0,0.04)';
-    idCtx.strokeRect(0,0,idCanvas.width,idCanvas.height);
+    fields.forEach(f => { if(f.value){ idCtx.fillText(`${f.label}: ${f.value}`, 20, y); y += 18; } });
+    idCtx.strokeStyle = 'rgba(0,0,0,0.04)'; idCtx.strokeRect(0,0,idCanvas.width,idCanvas.height);
   }
 
-  // redraw whenever inputs change
-  ['idName','idRole','idCompany','idPhone','idEmail','idDob','idAddress'].forEach(id => {
-    el(id).addEventListener('input', drawId);
-  });
-
-  idPhotoInput.addEventListener('change', (e)=>{
-    const f = e.target.files && e.target.files[0];
-    if(!f) return;
+  // robust image loader using createObjectURL and onload
+  idPhotoInput.addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0]; if(!f) return;
     const url = URL.createObjectURL(f);
     const img = new Image();
-    img.onload = ()=>{
-      idPhoto = img;
-      photoInfo.textContent = `${f.name} (${Math.round(f.size/1024)}KB)`;
-      drawId();
-      URL.revokeObjectURL(url);
-    };
-    img.onerror = ()=> { alert('Could not load photo. Try re-saving the image from your phone and uploading again.'); URL.revokeObjectURL(url); }
+    img.onload = ()=> { idPhoto = img; photoInfo.textContent = `${f.name} (${Math.round(f.size/1024)}KB)`; drawId(); URL.revokeObjectURL(url); };
+    img.onerror = ()=> { alert('Could not load photo. Try re-saving the image from your phone (Edit → Done) and upload again.'); URL.revokeObjectURL(url); }
     img.src = url;
   });
 
-  clearPhotoBtn.addEventListener('click', ()=> {
-    idPhoto = null;
-    idPhotoInput.value = '';
-    photoInfo.textContent = '';
-    drawId();
+  clearPhotoBtn.addEventListener('click', ()=> { idPhoto = null; idPhotoInput.value=''; photoInfo.textContent=''; drawId(); });
+
+  el('downloadId').addEventListener('click', ()=> {
+    const url = idCanvas.toDataURL('image/png'); const a = document.createElement('a'); a.href=url; a.download='id-card.png'; a.click();
   });
 
-  downloadIdBtn.addEventListener('click', ()=>{
-    const url = idCanvas.toDataURL('image/png');
-    const a = document.createElement('a'); a.href = url; a.download = 'id-card.png'; a.click();
+  el('saveId').addEventListener('click', ()=> {
+    const state = { name: el('idName').value, role: el('idRole').value, company: el('idCompany').value, phone: el('idPhone').value, email: el('idEmail').value, dob: el('idDob').value, address: el('idAddress').value, photo: idPhoto ? idCanvas.toDataURL('image/png') : null };
+    localStorage.setItem('pr-saved-id', JSON.stringify(state)); alert('ID saved locally.');
+  });
+  el('loadId').addEventListener('click', ()=> {
+    const s = localStorage.getItem('pr-saved-id'); if(!s) return alert('No saved ID found.');
+    try{ const st=JSON.parse(s); ['idName','idRole','idCompany','idPhone','idEmail','idDob','idAddress'].forEach(k=> el(k).value = st[k.replace('id','').toLowerCase()] || st[k] || ''); if(st.photo){ const img=new Image(); img.onload = ()=> { idPhoto = img; drawId(); }; img.src = st.photo; } else { idPhoto=null; drawId(); } alert('Loaded saved ID.'); }catch(e){ alert('Failed to load ID.'); }
   });
 
-  saveIdBtn.addEventListener('click', ()=>{
-    const state = {
-      name: el('idName').value, role: el('idRole').value, company: el('idCompany').value,
-      phone: el('idPhone').value, email: el('idEmail').value, dob: el('idDob').value, address: el('idAddress').value,
-      photo: idPhoto ? idCanvas.toDataURL('image/png') : null
-    };
-    localStorage.setItem('pr-saved-id', JSON.stringify(state));
-    alert('ID saved locally in your browser.');
-  });
-
-  loadIdBtn.addEventListener('click', ()=>{
-    const s = localStorage.getItem('pr-saved-id');
-    if(!s) return alert('No saved ID found.');
-    try{
-      const st = JSON.parse(s);
-      el('idName').value = st.name || '';
-      el('idRole').value = st.role || '';
-      el('idCompany').value = st.company || '';
-      el('idPhone').value = st.phone || '';
-      el('idEmail').value = st.email || '';
-      el('idDob').value = st.dob || '';
-      el('idAddress').value = st.address || '';
-      if(st.photo){
-        const img = new Image();
-        img.onload = ()=> { idPhoto = img; drawId(); };
-        img.src = st.photo;
-      } else { idPhoto = null; drawId(); }
-      alert('Loaded saved ID from browser storage.');
-    }catch(e){ alert('Failed to load ID.'); }
-  });
-
-  // initial draw
+  ['idName','idRole','idCompany','idPhone','idEmail','idDob','idAddress'].forEach(id => el(id).addEventListener('input', drawId));
   drawId();
 
-  /* Accessibility: close theme dropdown on outside click */
-  document.addEventListener('click', (e)=>{
-    if(!document.getElementById('themeSelectWrap').contains(e.target)) document.getElementById('themeList').style.display = 'none';
+  /* ================ LETTERS & EDITOR ================ */
+  const editor = el('editor');
+  // simple commands
+  document.querySelectorAll('.editor-toolbar button').forEach(btn=>{
+    btn.addEventListener('click', ()=> {
+      const cmd = btn.dataset.cmd;
+      if(cmd==='insertDate'){ document.execCommand('insertText', false, new Date().toLocaleDateString()); return; }
+      if(cmd==='h1'){ document.execCommand('formatBlock', false, 'h1'); return; }
+      if(cmd==='h2'){ document.execCommand('formatBlock', false, 'h2'); return; }
+      if(cmd==='clear'){ editor.innerHTML = ''; return; }
+      const map = { bold:'bold', italic:'italic', underline:'underline', justifyLeft:'justifyLeft', justifyCenter:'justifyCenter', justifyRight:'justifyRight' };
+      if(map[cmd]) document.execCommand(map[cmd], false, null);
+    });
   });
 
-  // Adjust sidebar width on small screens
+  // templates
+  const templates = {
+    blank: '<p>Dear [Name],</p><p></p><p>Regards,<br/>[Your name]</p>',
+    normal: `<p>${new Date().toLocaleDateString()}</p><p>Dear [Recipient Name],</p><p>Hope you are well. This is to inform you about...</p><p>Regards,<br/>[Your name]</p>`,
+    hospital: `<p>${new Date().toLocaleDateString()}</p><p>To Whom It May Concern,</p><p>This is to certify that <strong>[Patient Name]</strong> was examined on <strong>[Date]</strong> at <strong>[Hospital/Clinic]</strong>. Diagnosis: [Diagnosis]. Recommended rest / treatment: [Details].</p><p>Sincerely,<br/>[Doctor Name]<br/>[Hospital]</p>`,
+    invite: `<p>${new Date().toLocaleDateString()}</p><p>Dear [Guest],</p><p>We are pleased to invite you to <strong>[Event Name]</strong> on <strong>[Date]</strong> at <strong>[Venue]</strong>. Please RSVP by [Date].</p><p>Warm regards,<br/>[Host Name]</p>`
+  };
+  document.querySelectorAll('[data-template]').forEach(b => b.addEventListener('click', e=>{
+    const t = e.currentTarget.dataset.template;
+    editor.innerHTML = templates[t] || templates.blank;
+  }));
+
+  // print / export
+  el('printLetter').addEventListener('click', ()=> {
+    const html = `<html><head><meta charset="utf-8"><title>Letter</title><style>body{font-family:Arial,Helvetica,sans-serif;padding:28px;color:#111}</style></head><body>${editor.innerHTML}</body></html>`;
+    const w = window.open('','_blank'); w.document.write(html); w.document.close();
+    setTimeout(()=> { w.focus(); w.print(); }, 250);
+  });
+  el('exportLetterHtml').addEventListener('click', ()=> {
+    const blob = new Blob([editor.innerHTML], {type:'text/html'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='letter.html'; a.click(); URL.revokeObjectURL(a.href);
+  });
+  el('exportLetterTxt').addEventListener('click', ()=> {
+    const txt = editor.innerText || ''; const blob = new Blob([txt], {type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='letter.txt'; a.click(); URL.revokeObjectURL(a.href);
+  });
+  el('clearLetter').addEventListener('click', ()=> { if(confirm('Clear letter content?')) editor.innerHTML=''; });
+
+  /* ================ TABLE MAKER ================= */
+  el('openTableMaker').addEventListener('click', ()=> { el('tableMaker').classList.toggle('hidden'); });
+  el('makeTable').addEventListener('click', ()=> {
+    const r = Math.max(1, parseInt(el('tblRows').value || 1));
+    const c = Math.max(1, parseInt(el('tblCols').value || 1));
+    const table = document.createElement('table'); table.style.width='100%'; table.style.borderCollapse='collapse';
+    for(let i=0;i<r;i++){
+      const tr = document.createElement('tr');
+      for(let j=0;j<c;j++){
+        const td = document.createElement('td');
+        td.contentEditable = 'true';
+        td.style.border = '1px solid rgba(0,0,0,0.06)';
+        td.style.padding = '8px';
+        td.innerText = (i===0 ? `Header ${j+1}` : `Cell ${i+1}-${j+1}`);
+        tr.appendChild(td);
+      }
+      table.appendChild(tr);
+    }
+    const prev = el('tblPreview'); prev.innerHTML=''; prev.appendChild(table);
+  });
+  el('insertTable').addEventListener('click', ()=> {
+    const prev = el('tblPreview'); if(!prev.firstChild) return alert('Create a table first'); const html = prev.firstChild.outerHTML;
+    document.execCommand('insertHTML', false, html);
+  });
+
+  /* ================= Accessibility / small fixes ================= */
+  // Close dropdowns on outside click
+  document.addEventListener('click', (e)=> {
+    if(!document.getElementById('themeSelectWrap')?.contains(e.target)) document.getElementById('themeList').style.display='none';
+  });
+
+  // Make table cells editable inside editor when inserted (delegated)
+  editor.addEventListener('input', ()=> {
+    // keep simple; if table inserted make cells editable
+    editor.querySelectorAll('table').forEach(t=> t.querySelectorAll('td,th').forEach(cell => cell.setAttribute('contenteditable','true')));
+  });
+
+  // Ensure dark mode repaint: redraw ID canvas on theme change
+  const obs = new MutationObserver(()=> drawId());
+  obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+  // Make sure sidebar width correct on mobile
   function updateSidebarWidth(){ if(window.innerWidth < 420) sidebar.style.width = '94vw'; else sidebar.style.width = '360px'; }
-  window.addEventListener('resize', updateSidebarWidth);
-  updateSidebarWidth();
+  window.addEventListener('resize', updateSidebarWidth); updateSidebarWidth();
 </script>
 </body>
 </html>
