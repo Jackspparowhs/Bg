@@ -45,7 +45,7 @@
   .brand{display:flex;align-items:center;gap:12px;min-width:0}
   .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent-start),var(--accent-end));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:20px;flex-shrink:0}
   .brand-text{min-width:0}
-  /* smaller title so it fits mobile (your request) */
+  /* smaller title so it fits mobile */
   .title-strong{font-weight:900;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .by{font-size:12px;color:var(--muted);margin-top:2px}
 
@@ -114,18 +114,15 @@
     .title-strong{font-size:15px}
   }
 
-  /* ---------------------------
-     Dark-mode hero adjustments
-     (only change to make hero black + white text)
-     --------------------------- */
+  /* dark-mode hero: use same card color & readable white text (not pure black) */
   html.dark .hero {
-    background: linear-gradient(180deg,#000000, #0d0d0d) !important;
-    color: #ffffff !important;
-    box-shadow: var(--shadow-lg);
+    background: linear-gradient(180deg,var(--card), rgba(0,0,0,0.06));
+    color: var(--text);
   }
-  html.dark .hero .small { color: #bfcde0 !important; }
-  html.dark .hero .tab { border-color: rgba(255,255,255,0.04); color: #d7e9ff; }
-  html.dark .hero .tab.active { box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+  html.dark .hero .big { color: var(--text); }
+  html.dark .hero .small { color: var(--muted); }
+  html.dark .tab { border-color: rgba(255,255,255,0.04); color: var(--muted); }
+  html.dark .tab.active { box-shadow: 0 10px 30px rgba(0,0,0,0.45); }
 
   /* keep header brand readable in dark */
   html.dark .title-strong { color: #e9f1ff; }
@@ -142,7 +139,7 @@
       <a href="/" aria-label="Home" style="display:flex;align-items:center;gap:12px">
         <div class="logo" aria-hidden="true">PR</div>
         <div class="brand-text">
-          <div class="title-strong">Invoice • ID • Letters</div>
+          <div class="title-strong">Invoice • Letters</div>
           <div class="by">by PirateRuler.com</div>
         </div>
       </a>
