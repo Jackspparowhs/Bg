@@ -1,63 +1,166 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stocks by PirateRuler.com</title>
-  <link rel="stylesheet" href="app.css">
-  <script type="module" src="app.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Premium stock photos and videos by PirateRuler.com">
+    <title>Stocks by PirateRuler.com</title>
+    <link rel="preload" href="app.css" as="style">
+    <link rel="stylesheet" href="app.css">
+    <link rel="preconnect" href="https://api.pexels.com">
 </head>
 <body>
-  <div id="app">
-    <header>
-      <div class="hamburger" id="hamburger">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-      <h1>Stocks by PirateRuler.com</h1>
-      <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search...">
-        <button id="search-button"><i class="fas fa-search"></i></button>
-      </div>
-    </header>
-    <div id="sidebar" class="sidebar">
-      <div class="sidebar-content">
-        <a class="btn" href="https://pirateruler.com/post/about.html" target="_blank" rel="noopener">About — PirateRuler</a>
-        <a class="btn" href="https://pirateruler.com/post/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
-        <a class="btn" href="https://pirateruler.com/post/contact.html" target="_blank" rel="noopener">Contact</a>
-        <a class="btn" href="https://pirateruler.com/post/terms.html" target="_blank" rel="noopener">Terms & Service</a>
-        <div class="footer-controls">
-          <label class="switch">
-            <input type="checkbox" id="dark-mode-toggle">
-            <span class="slider round"></span>
-          </label>
-          <button id="clear-cache">Clear Cache</button>
-          <p>Media are shown via Pexels (or similar) and follow their licenses.</p>
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Header -->
+    <header class="header" role="banner">
+        <div class="header-container">
+            <button class="hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+            <h1 class="site-title">Stocks by PirateRuler.com</h1>
+            <div class="search-container">
+                <form class="search-form" role="search" aria-label="Search stock media">
+                    <input type="search" class="search-input" placeholder="Search premium assets..." aria-label="Search input">
+                    <button type="submit" class="search-button" aria-label="Submit search">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                    </button>
+                </form>
+            </div>
         </div>
-      </div>
-    </div>
-    <div id="filter-chips">
-      <button class="chip active">All</button>
-      <button class="chip">Photos</button>
-      <button class="chip">Videos</button>
-      <button class="chip">Nature</button>
-      <button class="chip">Space</button>
-      <button class="chip">Forest</button>
-      <button class="chip">Travel</button>
-      <button class="chip">Animals</button>
-      <button class="chip">Food</button>
-    </div>
-    <div id="card-grid"></div>
-    <div id="modal" class="modal">
-      <div class="modal-content">
-        <span class="close">&times;</span>
-        <img id="modal-image" src="" alt="">
-        <p id="modal-caption"></p>
-        <p id="modal-attribution"></p>
-        <button id="download-button">Download</button>
-      </div>
-    </div>
-  </div>
+    </header>
+
+    <!-- Filter Bar -->
+    <nav class="filter-bar" role="navigation" aria-label="Media type filters">
+        <div class="filter-container">
+            <div class="primary-filters">
+                <button class="filter-chip active" data-type="all">All</button>
+                <button class="filter-chip" data-type="photos">Photos</button>
+                <button class="filter-chip" data-type="videos">Videos</button>
+            </div>
+            <div class="secondary-filters">
+                <button class="filter-chip" data-category="Nature">Nature</button>
+                <button class="filter-chip" data-category="Space">Space</button>
+                <button class="filter-chip" data-category="Forest">Forest</button>
+                <button class="filter-chip" data-category="Travel">Travel</button>
+                <button class="filter-chip" data-category="Animals">Animals</button>
+                <button class="filter-chip" data-category="Food">Food</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="main-content" class="main-content" role="main">
+        <div class="grid-container" id="media-grid" aria-live="polite" aria-label="Media gallery">
+            <!-- Media cards will be injected here -->
+        </div>
+        <div class="loading-indicator" id="loading-indicator" aria-hidden="true">
+            <div class="spinner"></div>
+            <span>Loading premium assets...</span>
+        </div>
+    </main>
+
+    <!-- Modal Preview -->
+    <dialog class="modal" id="preview-modal" aria-label="Media preview" role="dialog">
+        <div class="modal-overlay" data-close-modal></div>
+        <div class="modal-content">
+            <button class="modal-close" aria-label="Close preview" data-close-modal>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6 6 18M6 6l12 12"></path>
+                </svg>
+            </button>
+            <div class="modal-media-container">
+                <img class="modal-image" alt="Preview image" />
+                <video class="modal-video" controls></video>
+            </div>
+            <div class="modal-info">
+                <h2 class="modal-title"></h2>
+                <div class="modal-meta">
+                    <span class="modal-photographer"></span>
+                    <span class="modal-resolution"></span>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-primary download-btn">Download</button>
+                    <button class="btn-secondary favorite-btn" aria-label="Toggle favorite">
+                        <svg class="heart-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                        <span>Favorite</span>
+                    </button>
+                </div>
+                <div class="modal-attribution"></div>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Sidebar Drawer -->
+    <aside class="sidebar" id="sidebar" role="complementary" aria-label="Navigation sidebar">
+        <div class="sidebar-overlay" data-close-sidebar></div>
+        <div class="sidebar-content">
+            <div class="sidebar-header">
+                <h3 class="sidebar-brand">PirateRuler.com Tools Network</h3>
+                <button class="sidebar-close" aria-label="Close sidebar" data-close-sidebar>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6 6 18M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Legal Links -->
+            <section class="legal-section">
+                <a class="btn legal-btn" href="https://pirateruler.com/post/about.html" target="_blank" rel="noopener">About — PirateRuler</a>
+                <a class="btn legal-btn" href="https://pirateruler.com/post/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
+                <a class="btn legal-btn" href="https://pirateruler.com/post/contact.html" target="_blank" rel="noopener">Contact</a>
+                <a class="btn legal-btn" href="https://pirateruler.com/post/terms.html" target="_blank" rel="noopener">Terms & Service</a>
+            </section>
+
+            <!-- Favorites -->
+            <section class="favorites-section">
+                <h4 class="section-title">Favorites</h4>
+                <div class="favorites-count">0 items saved</div>
+                <button class="btn-secondary view-favorites-btn">View All Favorites</button>
+            </section>
+
+            <!-- Settings -->
+            <section class="settings-section">
+                <h4 class="section-title">Settings</h4>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="dark-mode-toggle" checked>
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-label">Dark Mode</span>
+                </label>
+                <button class="btn-secondary clear-cache-btn">Clear Cache</button>
+            </section>
+
+            <!-- Categories -->
+            <section class="categories-section">
+                <h4 class="section-title">Categories <span class="count">(120+)</span></h4>
+                <div class="category-list" id="category-list"></div>
+            </section>
+
+            <!-- Countries -->
+            <section class="countries-section">
+                <h4 class="section-title">Countries</h4>
+                <div class="country-list" id="country-list"></div>
+            </section>
+
+            <!-- Subcategories -->
+            <section class="subcategories-section">
+                <h4 class="section-title">Subcategories</h4>
+                <div class="subcategory-container" id="subcategory-container">
+                    <p class="subcategory-hint">Select a category to view subcategories</p>
+                </div>
+            </section>
+        </div>
+    </aside>
+
+    <!-- Scripts -->
+    <script src="app.js" type="module"></script>
 </body>
 </html>
