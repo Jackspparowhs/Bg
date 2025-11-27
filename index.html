@@ -2,165 +2,181 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="Premium stock photos and videos by PirateRuler.com">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Stocks by PirateRuler.com - Premium stock photography gallery powered by Pexels">
     <title>Stocks by PirateRuler.com</title>
-    <link rel="preload" href="app.css" as="style">
     <link rel="stylesheet" href="app.css">
-    <link rel="preconnect" href="https://api.pexels.com">
 </head>
 <body>
-    <!-- Skip to main content for accessibility -->
-    <a href="#main-content" class="skip-link">Skip to main content</a>
-
-    <!-- Header -->
+    <!-- HEADER -->
     <header class="header" role="banner">
-        <div class="header-container">
-            <button class="hamburger" aria-label="Toggle navigation menu" aria-expanded="false">
-                <span class="hamburger-line"></span>
-                <span class="hamburger-line"></span>
-                <span class="hamburger-line"></span>
+        <button class="header-menu-btn" aria-label="Open menu" id="menuBtn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+        <h1 class="header-title">Stocks by PirateRuler.com</h1>
+        <div class="header-search">
+            <input 
+                type="text" 
+                class="search-input" 
+                id="searchInput" 
+                placeholder="Search photos, videos..."
+                aria-label="Search for photos or videos"
+            />
+            <button class="search-btn" id="searchBtn" aria-label="Search">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
             </button>
-            <h1 class="site-title">Stocks by PirateRuler.com</h1>
-            <div class="search-container">
-                <form class="search-form" role="search" aria-label="Search stock media">
-                    <input type="search" class="search-input" placeholder="Search premium assets..." aria-label="Search input">
-                    <button type="submit" class="search-button" aria-label="Submit search">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <path d="m21 21-4.35-4.35"></path>
-                        </svg>
-                    </button>
-                </form>
-            </div>
         </div>
     </header>
 
-    <!-- Filter Bar -->
-    <nav class="filter-bar" role="navigation" aria-label="Media type filters">
-        <div class="filter-container">
-            <div class="primary-filters">
-                <button class="filter-chip active" data-type="all">All</button>
-                <button class="filter-chip" data-type="photos">Photos</button>
-                <button class="filter-chip" data-type="videos">Videos</button>
-            </div>
-            <div class="secondary-filters">
-                <button class="filter-chip" data-category="Nature">Nature</button>
-                <button class="filter-chip" data-category="Space">Space</button>
-                <button class="filter-chip" data-category="Forest">Forest</button>
-                <button class="filter-chip" data-category="Travel">Travel</button>
-                <button class="filter-chip" data-category="Animals">Animals</button>
-                <button class="filter-chip" data-category="Food">Food</button>
-            </div>
+    <!-- FILTER BAR -->
+    <nav class="filter-bar" role="navigation" aria-label="Filter options">
+        <div class="filter-scroll">
+            <button class="chip active" data-filter="all" data-type="all">All</button>
+            <button class="chip" data-filter="photos" data-type="photos">Photos</button>
+            <button class="chip" data-filter="videos" data-type="videos">Videos</button>
+            <button class="chip" data-filter="nature">Nature</button>
+            <button class="chip" data-filter="space">Space</button>
+            <button class="chip" data-filter="forest">Forest</button>
+            <button class="chip" data-filter="travel">Travel</button>
+            <button class="chip" data-filter="animals">Animals</button>
+            <button class="chip" data-filter="food">Food</button>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <main id="main-content" class="main-content" role="main">
-        <div class="grid-container" id="media-grid" aria-live="polite" aria-label="Media gallery">
-            <!-- Media cards will be injected here -->
+    <!-- MAIN CONTENT -->
+    <main class="main-content" role="main">
+        <!-- GRID -->
+        <div class="gallery-grid" id="gallery" role="region" aria-label="Image gallery">
+            <div class="loading-spinner" id="initialLoader">
+                <div class="spinner"></div>
+                <p>Loading gallery...</p>
+            </div>
         </div>
-        <div class="loading-indicator" id="loading-indicator" aria-hidden="true">
+        <div class="loading-spinner" id="scrollLoader" style="display: none;">
             <div class="spinner"></div>
-            <span>Loading premium assets...</span>
         </div>
     </main>
 
-    <!-- Modal Preview -->
-    <dialog class="modal" id="preview-modal" aria-label="Media preview" role="dialog">
-        <div class="modal-overlay" data-close-modal></div>
+    <!-- MODAL -->
+    <div class="modal" id="modal" role="dialog" aria-hidden="true" aria-labelledby="modalTitle">
+        <div class="modal-overlay" id="modalOverlay"></div>
         <div class="modal-content">
-            <button class="modal-close" aria-label="Close preview" data-close-modal>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 6 6 18M6 6l12 12"></path>
-                </svg>
-            </button>
-            <div class="modal-media-container">
-                <img class="modal-image" alt="Preview image" />
-                <video class="modal-video" controls></video>
+            <button class="modal-close" id="modalClose" aria-label="Close modal">×</button>
+            <div class="modal-image-container">
+                <img id="modalImage" src="/placeholder.svg" alt="Preview image" class="modal-image" />
             </div>
             <div class="modal-info">
-                <h2 class="modal-title"></h2>
-                <div class="modal-meta">
-                    <span class="modal-photographer"></span>
-                    <span class="modal-resolution"></span>
-                </div>
+                <h2 id="modalTitle" class="modal-title"></h2>
+                <p class="modal-photographer"><strong>Photographer:</strong> <span id="modalPhotographer">Unknown</span></p>
+                <p class="modal-resolution"><strong>Resolution:</strong> <span id="modalResolution">—</span></p>
+                <p class="modal-source"><strong>Source:</strong> <span id="modalSource">Pexels</span></p>
                 <div class="modal-actions">
-                    <button class="btn-primary download-btn">Download</button>
-                    <button class="btn-secondary favorite-btn" aria-label="Toggle favorite">
-                        <svg class="heart-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <button class="btn btn-primary" id="modalDownload">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Download
+                    </button>
+                    <button class="btn btn-secondary" id="modalFavorite">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                         </svg>
-                        <span>Favorite</span>
+                        <span>Add to Favorites</span>
                     </button>
                 </div>
-                <div class="modal-attribution"></div>
             </div>
         </div>
-    </dialog>
+    </div>
 
-    <!-- Sidebar Drawer -->
-    <aside class="sidebar" id="sidebar" role="complementary" aria-label="Navigation sidebar">
-        <div class="sidebar-overlay" data-close-sidebar></div>
+    <!-- SIDEBAR DRAWER -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Navigation menu">
         <div class="sidebar-content">
             <div class="sidebar-header">
-                <h3 class="sidebar-brand">PirateRuler.com Tools Network</h3>
-                <button class="sidebar-close" aria-label="Close sidebar" data-close-sidebar>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 6 6 18M6 6l12 12"></path>
+                <h2>PirateRuler.com Tools Network</h2>
+                <button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar">×</button>
+            </div>
+
+            <!-- LEGAL BUTTONS -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-section-title">Links</h3>
+                <a class="btn sidebar-btn" href="https://pirateruler.com/post/about.html" target="_blank" rel="noopener">About — PirateRuler</a>
+                <a class="btn sidebar-btn" href="https://pirateruler.com/post/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
+                <a class="btn sidebar-btn" href="https://pirateruler.com/post/contact.html" target="_blank" rel="noopener">Contact</a>
+                <a class="btn sidebar-btn" href="https://pirateruler.com/post/terms.html" target="_blank" rel="noopener">Terms & Service</a>
+            </div>
+
+            <!-- FAVORITES COUNTER -->
+            <div class="sidebar-section">
+                <div class="favorites-counter">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                     </svg>
+                    <span id="favoritesCount">0</span>
+                    <span>Favorites</span>
+                </div>
+            </div>
+
+            <!-- DARK MODE TOGGLE -->
+            <div class="sidebar-section">
+                <button class="toggle-btn" id="darkModeToggle">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <span>Dark Mode</span>
                 </button>
             </div>
 
-            <!-- Legal Links -->
-            <section class="legal-section">
-                <a class="btn legal-btn" href="https://pirateruler.com/post/about.html" target="_blank" rel="noopener">About — PirateRuler</a>
-                <a class="btn legal-btn" href="https://pirateruler.com/post/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
-                <a class="btn legal-btn" href="https://pirateruler.com/post/contact.html" target="_blank" rel="noopener">Contact</a>
-                <a class="btn legal-btn" href="https://pirateruler.com/post/terms.html" target="_blank" rel="noopener">Terms & Service</a>
-            </section>
+            <!-- CLEAR CACHE -->
+            <div class="sidebar-section">
+                <button class="toggle-btn" id="clearCacheBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                        <path d="M21 3v5h-5"></path>
+                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                        <path d="M3 21v-5h5"></path>
+                    </svg>
+                    <span>Clear Cache</span>
+                </button>
+            </div>
 
-            <!-- Favorites -->
-            <section class="favorites-section">
-                <h4 class="section-title">Favorites</h4>
-                <div class="favorites-count">0 items saved</div>
-                <button class="btn-secondary view-favorites-btn">View All Favorites</button>
-            </section>
-
-            <!-- Settings -->
-            <section class="settings-section">
-                <h4 class="section-title">Settings</h4>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="dark-mode-toggle" checked>
-                    <span class="toggle-slider"></span>
-                    <span class="toggle-label">Dark Mode</span>
-                </label>
-                <button class="btn-secondary clear-cache-btn">Clear Cache</button>
-            </section>
-
-            <!-- Categories -->
-            <section class="categories-section">
-                <h4 class="section-title">Categories <span class="count">(120+)</span></h4>
-                <div class="category-list" id="category-list"></div>
-            </section>
-
-            <!-- Countries -->
-            <section class="countries-section">
-                <h4 class="section-title">Countries</h4>
-                <div class="country-list" id="country-list"></div>
-            </section>
-
-            <!-- Subcategories -->
-            <section class="subcategories-section">
-                <h4 class="section-title">Subcategories</h4>
-                <div class="subcategory-container" id="subcategory-container">
-                    <p class="subcategory-hint">Select a category to view subcategories</p>
+            <!-- CATEGORIES -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-section-title">Categories</h3>
+                <div class="category-list" id="categoryList">
+                    <!-- Populated by JavaScript -->
                 </div>
-            </section>
+            </div>
+
+            <!-- COUNTRIES -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-section-title">Countries</h3>
+                <div class="country-list" id="countryList">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- SUBCATEGORIES -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-section-title">Subcategories</h3>
+                <div class="subcategory-list" id="subcategoryList">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
         </div>
     </aside>
 
-    <!-- Scripts -->
-    <script src="app.js" type="module"></script>
+    <!-- SIDEBAR OVERLAY -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <script src="app.js"></script>
 </body>
 </html>
